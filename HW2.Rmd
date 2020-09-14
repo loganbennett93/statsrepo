@@ -1,0 +1,134 @@
+---
+title: "HW2"
+author: "Logan"
+date: "9/9/2020"
+output: html_document
+---
+
+```{r hw2, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+```
+
+## 2-3
+
+False. As the sample size increases, the sampling distribution approaches a normal shape, regardless of the population distribution due to the the Central Limit Theorem. However, this does not mean that the histogram of the sample is necessarily normal.
+
+## 2-6
+
+Y-bar is the sample statistic that will be used to approximate the value of mu, which is the parameter that we are trying to estimate. A hypothesis must be about the unknown parameter.
+
+## 2-7
+
+The hypothesis that the mean difference is zero the null hypothesis. We can say with 95% confidence that the difference in head circumference is between 0.61 and 1.19 cm. Since 0 cm is not within that 95% confidence interval, we have reason to believe that the null hypothesis is not true. We can say that the p-value is below 0.05, which refers to the 5% chance that the statistic we got was strictly due to chance.
+
+## 2-13
+
+``` {r 2-13, echo = FALSE, message = FALSE}
+#install.packages("ANOVAreplication")
+library("ANOVAreplication")
+data13 <- (ex0112)
+fishoil <- filter(data13, Diet == "FishOil")
+regularoil <- filter(data13, Diet == "RegularOil")
+meanfishoil <- mean(fishoil[1:7, 1:1])
+meanregularoil <- mean(regularoil[1:7, 1:1])
+sdfishoil <- sd(fishoil$BP)
+sdregularoil <- sd(regularoil$BP)
+
+pooledsd <- pooled.sd(data13)
+
+standardE <- pooledsd*sqrt((1/7)+(1/7))
+
+t95 <- 2.179
+halfwidth <- t95 * standardE
+lowerlimit <- (meanfishoil - meanregularoil) - halfwidth
+upperlimit <- (meanfishoil - meanregularoil) + halfwidth
+
+tstat <- ((meanfishoil - meanregularoil) - 0) / standardE
+
+#t.test(fishoil$BP,regularoil$BP, var.equal = T)
+
+```
+a.
+The average of the fish oil group is __`r meanfishoil`__.  
+The average of the regular oil group is __`r meanregularoil`__.  
+The sample standard deviation of the fish oil group is __`r sdfishoil`__.  
+The sample standard deviation of the regular oil group is __`r sdregularoil`__.
+
+b.
+The pooled estimate of the standard deviation is __`r pooledsd`__.
+
+c.
+The standard error is __`r standardE`__.
+
+d.
+The degrees of freedom associated with the pooled estimate of the standard deviation is equal to $$n_2+n_1-2$$, which in this case is equal to $$7+7-2=12$$. The 97.5th percentile of the t-distribution with 12 degrees of freedom is __2.179__.
+
+e.
+A 95% confidence interval for the difference in population means has a lower limit of __`r lowerlimit`__ and an upper limit of __`r upperlimit`__.
+
+f.
+The *t*-statistic for testing equality is __`r tstat`__.
+
+e.
+Based off of the Student's T-Table and a *t*-statistic of `r tstat`, the one-sided *p*-value is __0.005__.
+
+These results are confirmed by a t-test, which gives a two-sided p-value:
+
+``` {r ttest, echo = FALSE}
+t.test(fishoil$BP,regularoil$BP, var.equal = T)
+```
+
+
+## 2-18
+
+
+a. 
+```{r 2-18a, echo = FALSE}
+data18 <- (ex0218)
+data1976 <- filter(data18, Year == "1976")
+data1978 <- filter(data18, Year == "1978")
+boxplot(data1976$Depth, data1978$Depth,
+        main = "Beak Depths by Year",
+        xlab = "1976                                                        1978",
+        ylab = "Beak Depth (mm)")
+```
+b.
+```{r 2-18b, echo = FALSE}
+#Do a t-test with a one-sided p-value (omit alternative = "greater" for two-sided)
+#do the 1978 data first because we use mu2 - mu1
+t.test(data1978$Depth, data1976$Depth, var.equal = T, alternative = "greater")
+```
+As provided in the above t-test, the one-sided *p*-value is __1.617e-06__.
+
+c.
+
+
+## 2-22
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

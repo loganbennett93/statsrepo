@@ -1,0 +1,108 @@
+---
+title: "Stat 511 HW1"
+author: "Logan Bennett"
+date: "9/7/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Sleuth3)
+library(tidyr)
+library(tidyverse)
+```
+
+## 1-2
+
+It is difficult to prove sex discrimination because of confounding factors at play that may skew the results, such as education level or years of experience. Additionally, while results may appear to demonstrate sex discrimination, causation cannot be inferred from sex because employees cannot randomly be allocated into the respective groups of men and women, and causal inferences cannot be drawn from observation.
+
+## 1-6
+
+a. A genuine causal relationship cannot be drawn from this study because drug users were not randomly allocated into groups from which effects could be objectively assessed. 
+b. The results cannot be generalized to other 14- to 16-year-old's because the participants in the study were not randomly selected. They were instead drawn from a specific drug abuse program and compared to other drug-free volunteers who chose to be part of the study.
+c. Some potential confounding factors could be the educational background, family status, or income of the participants from the various groups.
+
+## 1-11
+
+It can still be said that the difference in treatments is what caused the difference in cold rates because there was random allocation of the subjects to the respective groups. The fact that some of the participants in the vitamin C group guessed that they were in the group does not change the fact that participants were randomly assigned and the results showed a causal relationship between vitamin C usage and lower cold rates.
+
+## 1-12
+
+The results of the study are still important because there is a significantly larger drop in blood pressure for the volunteers on the fish oil diet as compared to the volunteers on the regular oil diet. Since the volunteers were randomly assigned to each respective group, causal inferences can be made from the results. It can be concluded that fish oil helps reduce diastolic blood pressure.
+
+## 1-16
+
+a.
+```{r boxplot, echo = FALSE}
+boxplot(ex0116$PerCapitaGDP,
+main = "Box Plot of GDPs",
+ylab = "Gross Domestic Product per Capita in $U.S.")
+```
+b. There are some formatting differences between my display and Display 1.11, such as labels of the data points and alternations of the y-axis to be in 1,000 $U.S. The dimensions of the plot are different which makes the box seem narrower as well, and the number of countries is not included.
+c. 
+```{r histogram, echo = FALSE}
+hist(ex0116$PerCapitaGDP, 
+     main = "Histogram of GDPs",
+     xlab = "Gross Domestic Product per Capita in $U.S",
+     col = "2")
+```
+d.
+```{r histogram bins, echo = FALSE}
+hist(ex0116$PerCapitaGDP,
+     main = "Histogram of GDPs",
+     xlab = "Gross Domestic Product per Capita in $U.S.",
+     breaks = 30,
+     col = "2")
+```
+
+## 1-18
+
+```{r case0101, echo = TRUE}
+set.seed(42)
+number <- rnorm(47)
+df <- data.frame(number)
+data <- cbind(df, case0101)
+sortdata <- data[with(data, order(number)),]
+sortdata
+first <- sortdata[1:24, 2:2]
+second <- sortdata[25:47, 2:2]
+meanfirst <- mean(first)
+meansecond <- mean(second)
+meandiff <- meanfirst - meansecond
+```
+The average of the first 24 randomized scores is __`r meanfirst`__.  
+The average of the last 23 randomized scores is __`r meansecond`__.  
+The difference between the averages is __`r meandiff`__.
+
+## 1- 26
+
+The summary of prov-environment and anti-environment votes in the U.S. House of Representatives is shown in the following boxplot and table, organized by party.
+
+```{r 1-26, echo = FALSE}
+data26 <- (ex0126)
+plot(data26$Party,data26$PctPro,
+        main = "Pro-Environmental Votes in the U.S. House of Representatives",
+        xlab = "Party",
+        ylab = "Percentage of Votes that are Pro-Environment")
+aggregate(data26[10], list(data26$Party), mean)
+```
+
+It is clear from the data that Democrats are much more inclined to vote for pro-environment legislation in the House of Representatives than Representatives. Though there are a number of outliers for both parties, in which some Democrats are less likely to vote pro-environment and some Republicans are more likely to vote pro-environment, the trends are clear. The average percentage of pro-environment votes for democratic representatives is 85.90%, while that of republican representatives is 16.17%. Independent representatives have voted pro-environment 100% of the time between 2005 and 2007.
+
+
+## 1-27
+
+The summary of prov-environment and anti-environment votes in the U.S. Senate is shown in the following boxplot and table, organized by party.
+
+```{r 1-27, echo = FALSE}
+data27 <- (ex0127)
+plot(data27$Party, data27$PctPro,
+     main = "Pro-Environmental Votes in the U.S. Senate",
+     xlab = "Party",
+     ylab = "Percentage of Votes that are Pro-Environment")
+aggregate(data27[10], list(data27$Party), mean)
+```
+
+It is clear from the data that Democrats are much more inclined to vote for pro-environment legislation in the House of Representatives than Representatives. Though there are a number of outliers for both parties, in which a few Democrats are less likely to vote pro-environment and a few Republicans are more likely to vote pro-environment, the trends are clear. The average percentage of pro-environment votes for democratic senators is 83.64%, while that of republican senators is 18.55%. Independent representatives have voted pro-environment 92.44% of the time between 2005 and 2007.
