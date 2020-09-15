@@ -2,7 +2,9 @@
 title: "HW2"
 author: "Logan"
 date: "9/9/2020"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r hw2, include=FALSE}
@@ -91,7 +93,7 @@ data1976 <- filter(data18, Year == "1976")
 data1978 <- filter(data18, Year == "1978")
 boxplot(data1976$Depth, data1978$Depth,
         main = "Beak Depths by Year",
-        xlab = "1976                                                        1978",
+        xlab = "1976                                                    1978",
         ylab = "Beak Depth (mm)")
 ```
 b.
@@ -100,35 +102,74 @@ b.
 #do the 1978 data first because we use mu2 - mu1
 t.test(data1978$Depth, data1976$Depth, var.equal = T, alternative = "greater")
 ```
-As provided in the above t-test, the one-sided *p*-value is __1.617e-06__.
+As provided in the above *t*-test, the one-sided *p*-value is __1.617e-06__.
 
 c.
+```{r 2-18c, echo = FALSE}
+#Do a t-test with a two-sided p-value (omit alternative = "greater" for two-sided)
+#do the 1978 data first because we use mu2 - mu1
+t.test(data1978$Depth, data1976$Depth, var.equal = T)
+```
+As provided in the above *t*-test, the two-sided *p*-value is __1.617e-06__.
 
+d.
+As provided by the *t*-tests given above, the mean of the 1978 data is 10.138202 mm and the mean of the 1976 data is 9.600799 mm, the difference of which is __0.537403 mm__. A 95% confidence interval for the amount by which the 1978 mean exceeds the 1976 mean is between __0.3123571__ and __0.7624495__.
+
+e.
+The populations are not independent of each other due to the fact that the finches which survived into 1978 were also part of the population studied in 1976.
 
 ## 2-22
 
+```{r 2-22afqt, echo = TRUE}
+data22 <- (ex0222)
+male <- filter(data22, Gender == "male")
+female <- filter(data22, Gender == "female")
+boxplot(male$AFQT, female$AFQT,
+        main = "AFQT Scores by Gender",
+        xlab =  "Male                                                Female",
+        ylab = "AFQT Score")
 
+t.test(male$AFQT, female$AFQT, var.equal = T, alterative = "two.sided")
+```
+The AFQT scores show a moderate difference between males and females, with a male average score of __55.44625__ and a female average score of __53.40579__. The difference between these two sample means (male-female) is only __2.04046__ points. However, the two-sided *p*-value given by the *t*-test is 0.06715, which means that there is only moderate evidence of a difference. We do not reject the null hypothesis since our 95% confidence interval includes the 0 value of no assumed difference.
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r 2-22arith, echo = TRUE}
+boxplot(male$Arith, female$Arith,
+        main = "Arithmetic Reasoning Scores by Gender",
+        xlab =  "Male                                                Female",
+        ylab = "Arithmetic Reasoning Score")
+
+t.test(male$Arith, female$Arith, var.equal = T, alterative = "two.sided")
+```
+There appears to be a convincing difference between the arithmetic reasoning scores between men and women. The average of the male scores is __19.52297__ and the average of the female scores is __17.48592__. The difference between these sample means (male-female) is __2.03705__. The two-sided *p*-value is small enough to convince us that the null hypothesis is not correct. Furthermore, the 0 value of no assumed difference does not exist within the 95% confidence interval.
+
+```{r 2-22word, echo = TRUE}
+boxplot(male$Word, female$Word,
+        main = "Word Knowledge Scores by Gender",
+        xlab =  "Male                                                Female",
+        ylab = "Word Knowledge Score")
+
+t.test(male$Word, female$Word, var.equal = T, alterative = "two.sided")
+```
+There is no significant difference between the word knowledge scores between men and women. The average of the male scores is __26.54594__ and the average of the female scores is __26.56808__. The difference between these sample means (male-female) is __-0.02214__. The two-sided *p*-value is very large, which indicates to us that the null hypothesis is correct. Furthermore, the 0 value of no assumed difference exists almost exactly in the center of the 95% confidence interval.
+
+```{r 2-22parag, echo = TRUE}
+boxplot(male$Parag, female$Parag,
+        main = "Paragraph Comprehension Scores by Gender",
+        xlab =  "Male                                                Female",
+        ylab = "Paraggraph Comprehension Score")
+
+t.test(male$Parag, female$Parag, var.equal = T, alterative = "two.sided")
+```
+There appears to be a convincing difference between the paragraph comprehension scores between men and women. The average of the male scores is __10.92037__ and the average of the female scores is __11.48983__. The difference between these sample means (male-female) is __-0.56946__. The two-sided *p*-value is small enough to convince us that the null hypothesis is not correct. Furthermore, the 0 value of no assumed difference does not exist within the 95% confidence interval.
+
+```{r 2-22math, echo = TRUE}
+boxplot(male$Math, female$Math,
+        main = "Mathematical Knowledge Scores by Gender",
+        xlab =  "Male                                                Female",
+        ylab = "Mathematical Knowledge Score")
+
+t.test(male$Math, female$Math, var.equal = T, alterative = "two.sided")
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+There appears to be a convincing difference between the mathematical knowledge scores between men and women. The average of the male scores is __14.56738__ and the average of the female scores is __13.81534__. The difference between these sample means (male-female) is __0.75204__. The two-sided *p*-value is small enough to convince us that the null hypothesis is not correct. Furthermore, the 0 value of no assumed difference does not exist within the 95% confidence interval.
