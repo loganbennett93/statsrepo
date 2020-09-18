@@ -1,0 +1,77 @@
+---
+title: "HW3"
+author: "Logan"
+date: "9/17/2020"
+output: html_document
+---
+
+
+```{r hw2, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+```
+
+## 3-3
+
+It was important that the airplane crew was unaware of whether seeding was conducted or not because the seeding experiment was designed to be randomized. If the crew knew whether seeding were going to happen on certain flights, then human bias could have intentionally or unintentionally swayed the results.
+
+## 3-5
+
+I would respond by saying that the box plots show almost identical medians and spread for both Vietnam veterans and other veterans. There are a few major outliers in the Vietnam veterans data which make the values seem larger, but this is likely due to the fact that there is a much larger sample size of Vietnam veterans, with 646, than of other veterans, with 97. 
+
+## 3-8
+
+The researchers did not make a mistake. The paired *t*-test was used due to the dependence of each set of twins, which is desirable for that type of test. This sample would not be ideal for two-sample *t*-tools.
+
+## 3-18
+
+a. No. The difference in averages is not resistant because the mean of either group is volatile to large outliers.
+b. Yes. The average of the ranks is resistant because the median is a measure of rank and is not greatly skewed by outliers.
+
+## 3-26
+
+a.
+``` {r 3-26a, echo = FALSE}
+data26 <- (case0302)
+Vietnam <- filter(data26, Veteran == "Vietnam")
+Other <- filter(data26, Veteran == "Other")
+lnVietnam <- log(Vietnam$Dioxin + 0.5)
+lnOther <- log(Other$Dioxin + 0.5)
+boxplot(lnVietnam, lnOther,
+        main = "Log Transformed Dioxin Levels",
+        ylab = "Log Dioxin Level in Parts Per Trillion",
+        xlab = "Veteran Type",
+        names = c("Vietnam", "Other"),
+        col = 4)
+```
+
+b.
+``` {r 3-26b, echo = FALSE}
+library("ANOVAreplication")
+#We need to do a one-sided pooled t-test (should get p-value = .1908)
+t.test(lnVietnam, lnOther, var.equal = T, alternative = "greater")
+```
+As shown above in the two-sample *t*-test, the *p*-value is equal to __0.1908__.
+
+c.
+``` {r 3-26c, echo = TRUE}
+#call in data frame then modify one column of data frame
+lndata26 <- (case0302)
+lndata26$Dioxin <- log(lndata26$Dioxin + 0.5)
+#do pooled t-test
+pooledsd <- pooled.sd(lndata26)
+StandardE <- pooledsd*sqrt((1/646)+(1/97))
+tratio <- qt(0.975, df = 741)
+halfwidth = tratio * StandardE
+lowerlog <- (1.462548 - 1.419013) - halfwidth
+upperlog <- (1.462548 - 1.419013) + halfwidth
+lower <- exp(lowerlog)
+upper <- exp(upperlog)
+```
+A 95% confidence interval constructed on the log-transformed dataset provides a lower limit on the log scale of __`r lowerlog`__ and an upper limit on the log scale of __`r upperlog`__. Interpreted back to the original scale, the lower limit of the confidence interval is __`r lower`__ and the upper limit is __`r upper`__.
+
+## 3-28
+
+
+## 3-30
