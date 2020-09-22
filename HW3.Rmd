@@ -2,7 +2,9 @@
 title: "HW3"
 author: "Logan"
 date: "9/17/2020"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 
