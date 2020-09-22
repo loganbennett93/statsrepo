@@ -10,6 +10,7 @@ output: html_document
 library("Sleuth3")
 library("tidyr")
 library("tidyverse")
+library("ANOVAreplication")
 ```
 
 ## 3-3
@@ -33,6 +34,7 @@ b. Yes. The average of the ranks is resistant because the median is a measure of
 
 a.
 ``` {r 3-26a, echo = FALSE}
+#do the log transformation on the dataframes
 data26 <- (case0302)
 Vietnam <- filter(data26, Veteran == "Vietnam")
 Other <- filter(data26, Veteran == "Other")
@@ -48,7 +50,6 @@ boxplot(lnVietnam, lnOther,
 
 b.
 ``` {r 3-26b, echo = FALSE}
-library("ANOVAreplication")
 #We need to do a one-sided pooled t-test (should get p-value = .1908)
 t.test(lnVietnam, lnOther, var.equal = T, alternative = "greater")
 ```
@@ -69,9 +70,69 @@ upperlog <- (1.462548 - 1.419013) + halfwidth
 lower <- exp(lowerlog)
 upper <- exp(upperlog)
 ```
-A 95% confidence interval constructed on the log-transformed dataset provides a lower limit on the log scale of __`r lowerlog`__ and an upper limit on the log scale of __`r upperlog`__. Interpreted back to the original scale, the lower limit of the confidence interval is __`r lower`__ and the upper limit is __`r upper`__.
+A 95% confidence interval constructed on the log-transformed dataset provides a lower limit on the log scale of __`r lowerlog`__ and an upper limit on the log scale of __`r upperlog`__. Interpreted back to the original scale, the lower limit of the confidence interval is __`r lower`__ and the upper limit is __`r upper`__. The results of this study cannot be inferred on a larger scale of the population because the samples were not selected randomly. Nor can causation of dioxin levels be inferred because veterans were not randomly assigned to each group, Vietnam veterans or other veterans.
 
 ## 3-28
 
+``` {r 3-28, echo = FALSE}
+data28 <- (ex0221)
+survived <- filter(data28, Status == "Survived")
+perished <- filter(data28, Status == "Perished")
+t.test(survived$Humerus, perished$Humerus, var.equal = T, alterative = "two.sided")
+```
+As shown above in the two-sided *t*-test, the *p*-value obtained from comparing humerus lengths of sparrows that perished and survived is __0.0809__.
+
+```{r 3-28-2, echo _ FALSE}
+#modify the perished data to get rid of the first row, i.e. the lowest humerus length
+data28mod <- (ex0221)
+perishedmod <- filter(data28mod, Status == "Perished")
+perished2 <- perishedmod[-c(1),]
+t.test(survived$Humerus, perished2$Humerus, var.equal = T, alterative = "two.sided")
+```
+
+As shown above in the two-sided *t*-test, the *p*-value obtained from comparing humerus lengths of sparrows that perished, excluding the smallest length in the perished group, and survived is __0.18__.
+
+Yes. The conclusions depend on this one observation, since the *p*-value is not resistant to the omittance of the lowest value of the perished group. Including this observation, the *p*-value indicates that there is moderate evidence of a difference between the samples. However, omitting the observation provides a *p*-value that indicates there is not significant difference between the samples. This was a not a randomized experiment and so causal inferences between humerus length and survival cannot be made directly. However, the birds were randomly gathered after the storm, so inferences to the larger population can be made. 
 
 ## 3-30
+
+```{r 3-30, echo = FALSE}
+data30 <- (ex0330)
+twelve <- filter(data30, Educ == "12")
+sixteen <- filter(data30, Educ == "16")
+twelve$Income2005 <- log(twelve$Income2005)
+sixteen$Income2005 <- log(sixteen$Income2005)
+#boxplot the logged data
+boxplot(twelve$Income2005, sixteen$Income2005, 
+        main = "Log Income and Education Level",
+        xlab = "Years of Education",
+        ylab = "Income (Logged)",
+        names = c("Twelve", "Sixteen"),
+        col = 5)
+
+#get differences in logged means
+#t.test(sixteen$Income2005, twelve$Income2005, var.equal = T, alternative = "two.sided")
+
+#do a pooled t-test to describe the difference in population distributions (oonvert back to normal scale)
+
+data30log <- (ex0330)
+data30log$Income2005 <- log(data30log$Income2005)
+#Get rid of a the Subject column (set to null) in the data frame to successfully calculate pooled sd
+#then flip columns to get values first then classifications
+data30log$Subject <- NULL
+data30log <- data30log[c("Income2005", "Educ")]
+pooledsd30 <- pooled.sd(data30log)
+StandardE30 <- pooledsd30*sqrt((1/406)+(1/1020))
+tratio30 <- qt(0.975, 1424)
+logmean <- 10.79709 - 10.22721
+halfwidth30 <- tratio30 * StandardE30
+upperlog <- logmean + halfwidth30
+lowerlog <- logmean - halfwidth30
+upper <- exp(upperlog)
+lower <- exp(lowerlog)
+mean <- exp(logmean)
+```
+
+Provided above is a boxplot of income and education level. The original distributions of the data were both heavily skewed  and the group with the larger mean (sixteen years of education) also had a larger spread, so a log transformation was done on the data to make it approach normality. After doing a pooled *t*-test and transforming the data back to the original scale, the mean difference between income levels is given as __`r mean`__, which means that those having 16 years of education have a __76.8%__ higher income on average than those having 12 years of education. A confidence interval for this statistic is from __`r lower`__ to __`r upper`__, or from __59.7%__ to __95.8%__.  
+
+This study was not a randomized experiment since subjects were not randomly assigned into groups to gain their respective yeras of education, and so causal inferences between the years of educaiton and income cannot be made. Nor was this study done using random sampling because the National Longitudinal Study of Youth (NLSY79) used variable probability sampling. The subjects were chosen from the intelligence study that was performed years before. Because random sampling was not used, the results cannot be extrapolated to the entire population. The observations made within this study are telling, but can only be applied to this group.

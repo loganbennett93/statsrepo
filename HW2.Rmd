@@ -106,7 +106,7 @@ As provided in the above *t*-test, the one-sided *p*-value is __1.617e-06__.
 
 c.
 ```{r 2-18c, echo = FALSE}
-#Do a t-test with a two-sided p-value (omit alternative = "greater" for two-sided)
+#Do a t-test with a two-sided p-value (alternative = "two.sided" for two-sided)
 #do the 1978 data first because we use mu2 - mu1
 t.test(data1978$Depth, data1976$Depth, var.equal = T)
 ```
