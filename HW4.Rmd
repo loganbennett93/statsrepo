@@ -1,0 +1,146 @@
+---
+title: "HW4"
+author: "Logan Bennett"
+date: "9/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 4.3
+
+It is not a reasonable approach to delete all the zeros from the data set since permutation tests calculate *p*-values as a proportion of regroupings, and the zeros are a large proportion of the data. This can lead to misleading results. If a log transformation is desired, then each point of data could be increased by a small amount to allow for a valid log distribution.
+
+## 4.10
+
+There is some slight variability in the way that *p*-values are calculated using a randomization test and a *t*-distribution. While the two *p*-values are on opposite sides of 0.05, they are very close, and it should not be stated that the two methods give drastically different conclusions about the data. They are in reality quite similar and the two results are consistent with each other.
+
+## 4.17
+
+``` {r 4-17, echo = FALSE}
+data17 <- (case0401)
+#Change the values in rows 4 and 24 of the incidents to the switched values
+data17$Incidents[c(4, 24)] <- c(2, 3)
+# or data17[4,1] = 2 and data17[24,1] = 3
+
+#separate dataframe into cool and warm
+data17cool <- filter(data17, Launch == "Cool")
+data17warm <- filter(data17, Launch == "Warm")
+
+#Do a t-test to get a t-statistic for the dataset
+t.test(data17cool$Incidents, data17warm$Incidents, var.equal = T, alternative = "greater")
+p17 <- round(416/10626, 3)
+```
+From a *t*-test, the observed value of the *t*-statistic is found to be **2.643** for the altered data. Making use of Display 4.10, the number of rearrangements into two groups of size 4 and 20 is **10,626** and the number of rearrangements with identical *t*-statistics greater or equal to **2.643** is `316 + 95 + 10 = 421.` The one-sided *p*-value from the permutation test applied the the *t*-statistic is **`r p17`**.
+
+## 4.19
+
+``` {r 4-19, echo = FALSE}
+data19 <- (ex0221)
+survived <- filter(data19, Status == "Survived")
+perished <- filter(data19, Status == "Perished")
+#Perform a Rank-Sum Test to get a two-sided p-value
+wilcox.test(survived$Humerus, perished$Humerus, alternative = "two.sided")
+
+```
+a.
+From a Wilcoxin rank-sum test, shown above, the two-sided *p*-value is shown to be **0.1718**.
+
+b.
+As the results of the rank-sum test given above show, the exact *p*-value was not reported due to ties in the data, so instead the one based off the normal approximation.
+
+c.
+No. It does not use a continuity correction to the Z-statistic.
+
+d.
+The *p*-value from the rank-sum test (**0.1718**) is larger than the one from the two-sample *t*-test (**0.08**) and just smaller than the one from the two-sample *t*-test when the smallest observed value was removed (**0.18**).
+
+e.
+The two-sample *t*-test using the strategy for dealing with outliers is useful in determining *p*-values when the populations are normal since it makes better use of the available data. However, the rank-sum test also performs well in the normal model since it is nonparametric. However, compared to *t*-tests, the rank-sum test performs substantially better for long-tailed distributions for the same reason. In this case with the fairly normal data from the Bumpus study, both tests (the rank-sum and the *t*-test using the strategy to eliminate outliers) provided similar *p*-values.
+
+## 4.25
+
+```{r 4-25, echo = FALSE}
+data25 <- (ex0211)
+control <- filter(data25, Group == "Control")
+treatment <- filter(data25, Group == "Bacilli")
+#Do a welch t-test by removing var.equ = T
+t.test(control$Lifetime, treatment$Lifetime, alternative = "two.sided")
+
+```
+The results of a Welch Two Sample *t*-test are given above. The two-sided *p*-value is given as **0.00169** and a 95% confidence interval for the difference of days of life of guinea pigs given the bacilli treatment is between **39.6** and **165.8** days. The additive treatment effect may not be a sensible model for these data due to the fact that the spread of the control group is larger than the spread of the treatment group, and the results may be confounded by other factors.
+
+## 4.27
+
+```{r 4-27, echo = FALSE}
+data27 <- (case0202)
+unaffected <- data27$Unaffected
+affected <- data27$Affected
+logdata27 <- log(case0202)
+logunaffected <- logdata27$Unaffected
+logaffected <- logdata27$Affected
+#Perform signed-rank tests on the datasets
+wilcox.test(unaffected, affected, paired = TRUE, alternative = "two.sided")
+wilcox.test(logunaffected, logaffected, paired = TRUE, alternative = "two.sided")
+```
+As shown above in the results of Wilcoxin signed-rank tests for both the untransformed and transformed data, the two-sided *p*-value in both instances is **0.002014**. Histograms for both sets of data are shown below. Histograms of untransformed data are shown in blue, while histograms of log-transformed data are shown in yellow.
+
+```{r 4-27 histograms, echo = FALSE}
+hist(affected,
+     main = "Affected Hippocampus Volume",
+     xlab = "Hippocampus Volume (cm^3)",
+     col = 5)
+hist(logaffected,
+     main = "Log-Transformed Affected Hippocampus Volume",
+     xlab = "Hippocampus Volume (cm^3)",
+     col = 7)
+hist(unaffected,
+     main = "Unffected Hippocampus Volume",
+     xlab = "Hippocampus Volume (cm^3)",
+     col = 5)
+hist(logunaffected,
+     main = "Log-Transformed Unaffected Hippocampus Volume",
+     xlab = "Hippocampus Volume (cm^3)",
+     col = 7)
+```
+The signed-rank test is a resistant and distribution-free alternative to the paired *t*-test and in both cases, log-transformed and untransformed, the distributions seem similar. Because the signed-rank test is distribution-free it seems that the assumptions are appropriate on both scales, especially given the identical *p*-values.
+
+
+
+## 4.31
+
+Histograms of the data for both groups of patients, those that participated in group therapy and those that did not, are shown below.
+
+```{r 4-31 histograms, echo = FALSE}
+data31 <- (ex0431)
+data31$Censor <- NULL
+therapy <- filter(data31, Group == "Therapy")
+control <- filter(data31, Group == "Control")
+hist(therapy$Survival,
+     main = "Survival of Group Therapy Patients",
+     xlab = "Months of Survival After Beginning of Study",
+     breaks = 10,
+     col =2)
+hist(control$Survival,
+     main = "Survival of Control Patients",
+     xlab = "Months of Survival After Beginning of Study",
+     breaks = 10,
+     col =2)
+```
+It is apparent from the histograms that the separate groups do not have similar distributions nor do they have similar spreads. The patients who participated in group therapy lived an average of **39.5** months after the beginning of the study compared to the average **20.0** months for those who did not participate in group therapy. The median survival time was also larger for those who participated in group therapy, with a median of **21** months of survival, as opposed to **17** months for those who did not. However, as aforementioned, the spread and distributions of these groups, each organized into 10 bins, are vastly different, and further analysis is necessary to describe the differences between the groups. I chose to use a rank-sum test to analyze the data due to the fact that it is resistant to censored data and also because it is non-parametric and can handle the difference in distributions between the two groups. The results of a rank-sum test performed on the data are shown below.
+
+```{r 4-31 analysis, echo = FALSE}
+#Perform a Rank-sum test on the data
+wilcox.test(therapy$Survival, control$Survival, alternative = "two.sided")
+
+```
+
+The *p*-value from the rank-sum test is given above as **0.265**, which indicates that there is no significant difference in the number of months survived between those who participated in group therapy and those who did not. Furthermore, a confidence interval calculated from the data indicates with 95% confidence that the number of months added onto the life of a patient participating in group therapy is between **-4** and **28** months. Since 0 months lives within the confidence interval and the *p*-value indicates an insignificant difference, we do not reject the null hypothesis that there is no difference between the groups. We cannot make any direct claims from this study that participating in group therapy can add months of survival to a breast cancer patient's life.
+
+The results of this study cannot be inferred to a larger population due to the fact that this was not a random sample of the population. Rather, the study was performed on a specific group of people with similar cancer diagnoses. The results can only be applied to this gorup. This was a randomized experiment because the individuals were randomly assigned to the treatment and control groups, so the experiment does allow for causal inferences. However, the results of this study do not indicate that group therapy causes patients to live longer.
