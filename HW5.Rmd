@@ -1,0 +1,121 @@
+---
+title: "HW5"
+author: "Logan Bennett"
+date: "10/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 5.4
+
+
+## Problem 5.10
+
+
+## Problem 5.16
+
+```{r 16, echo = FALSE}
+data16 <- (case0502)
+#change dataframe into a linear model with values and groups > lm(y ~ group, data) (use aov or lm function)
+spocks <- lm(Percent ~ Judge, data16)
+anova(spocks)
+```
+See the above ANOVA table for the Spock Trial data.
+
+## Problem 5.17
+
+|Source|d.f.|Sum of Squares|Mean Square|F-statistic|p-vale|
+|-----|------|------|----|------|-----|
+|Between groups|7|35819|5117|3.5|0.009942|
+|Within groups|24|35088|1462| | |
+|Total|31|70907| | | |
+
+From the above ANOVA table and the *p*-value of **0.009942** we have convincing evidence that at least one of the means of the **8** group means is different from the others.
+
+## Problem 5.18
+
+a.
+
+```{r 18 a, echo = FALSE}
+data18 <- (ex0518)
+#filter data by treatment
+c50 <- filter(data18, Treatment == "CPFA50")
+c150 <- filter(data18, Treatment == "CPFA150")
+c300 <- filter(data18, Treatment == "CPFA300")
+c450 <- filter(data18, Treatment == "CPFA450")
+c600 <- filter(data18, Treatment == "CPFA600")
+control <- filter(data18, Treatment == "Control")
+#Calculate the mean for each of the 6 groups
+mean50 <- mean(c50$Protein)
+mean150 <- mean(c150$Protein)
+mean300 <- mean(c300$Protein)
+mean450 <- mean(c450$Protein)
+mean600 <- mean(c600$Protein)
+meancontrol <- mean(control$Protein)
+#calculate the grand mean and add a column for it
+grandmean <- mean(data18$Protein)
+equalmean <- c(rep(grandmean, 30))
+data18 <- cbind(data18, equalmean)
+#Add a column to data frame for equal means residual
+equalres <- c(data18$Protein - grandmean)
+data18 <- cbind(data18, equalres)
+#Add columns for the separate means and separate means residual then add columns to data frame
+sepmean <- c(rep(mean50, 3), rep(mean150, 3),rep(mean300, 3),rep(mean450, 3),rep(mean600, 3),rep(meancontrol, 15))
+data18 <- cbind(data18, sepmean)
+sepres <- c((c50$Protein - mean50),(c150$Protein - mean150),(c300$Protein - mean300),(c450$Protein - mean450),(c600$Protein - mean600),(control$Protein - meancontrol))
+data18 <- cbind(data18, sepres)
+#Plot residuals vs estimated means vs separate residuals
+plot(data18$sepmean, data18$sepres,
+     main = "Residual Plot of Estimated Mean vs. Residuals",
+     xlab = "Treatment Mean",
+     ylab = "Residual (x10)")
+#Plot residuals vs day
+plot(as.integer(data18$Day), data18$sepres,
+     main = "Residual Plot of Day vs. Residuals",
+     xlab = "Day",
+     ylab = "Residual (x10)")
+```
+Based on Display 5.15 from the book, these residual plots demonstrate a non-constant variance. A logit transformation might help, but nothing indicates that the methods of this chapter are not appropriate.
+
+b.
+
+The estimated means for the model with 10 independent samples are given below in the table. Based on an ANOVA F-test, also summarized below, at least one of the 10 means is different from the others, due to the low *p*-value of **7.154e-05**.
+
+```{r 18 b, echo = FALSE}
+data18b <- (ex0518)
+#Calculate means by TrtDayGroup and add a column to the data frame
+tdg1 <- mean(filter(data18b, TrtDayGroup == "Group1")$Protein)
+tdg2 <- mean(filter(data18b, TrtDayGroup == "Group2")$Protein)
+tdg3 <- mean(filter(data18b, TrtDayGroup == "Group3")$Protein)
+tdg4 <- mean(filter(data18b, TrtDayGroup == "Group4")$Protein)
+tdg5 <- mean(filter(data18b, TrtDayGroup == "Group5")$Protein)
+tdg6 <- mean(filter(data18b, TrtDayGroup == "Group6")$Protein)
+tdg7 <- mean(filter(data18b, TrtDayGroup == "Group7")$Protein)
+tdg8 <- mean(filter(data18b, TrtDayGroup == "Group8")$Protein)
+tdg9 <- mean(filter(data18b, TrtDayGroup == "Group9")$Protein)
+tdg10 <- mean(filter(data18b, TrtDayGroup == "Group10")$Protein)
+#Create the column of means
+Estimated_Means <- c(rep(tdg1, 3), rep(tdg2, 3), rep(tdg3, 3), rep(tdg4, 3), rep(tdg5, 3), rep(tdg6, 3), rep(tdg7, 3), rep(tdg8, 3), rep(tdg9, 3), rep(tdg10, 3))
+#Add the column to the data frame
+data18b <- cbind(data18b, Estimated_Means)
+#Create a Table for the estimated means of the 10 independent samples
+kable(data18b)
+#Calculate the ANOVA F-test for a linear model of the data frame
+tdglm <- lm(Protein ~ TrtDayGroup, data18b)
+anova(tdglm)
+```
+
+c.
+
+
+
+
+## Problem 5.23

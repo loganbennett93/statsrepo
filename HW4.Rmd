@@ -2,7 +2,9 @@
 title: "HW4"
 author: "Logan Bennett"
 date: "9/26/2020"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -53,10 +55,10 @@ a.
 From a Wilcoxin rank-sum test, shown above, the two-sided *p*-value is shown to be **0.1718**.
 
 b.
-As the results of the rank-sum test given above show, the exact *p*-value was not reported due to ties in the data, so instead the one based off the normal approximation.
+As the results of the rank-sum test given above show, the exact *p*-value was not reported due to ties in the data, so instead the one based off the normal approximation is given.
 
 c.
-No. It does not use a continuity correction to the Z-statistic.
+Yes. It does use a continuity correction to the Z-statistic.
 
 d.
 The *p*-value from the rank-sum test (**0.1718**) is larger than the one from the two-sample *t*-test (**0.08**) and just smaller than the one from the two-sample *t*-test when the smallest observed value was removed (**0.18**).
