@@ -2,7 +2,9 @@
 title: "HW5"
 author: "Logan Bennett"
 date: "10/7/2020"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -16,9 +18,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Problem 5.4
 
+When the sample sizes are different, a weighted average of the pooled estimate of the standard deviation is appropriate since estimates from larger samples will be given more weight. The pooled estimate will then be a better approximation if all the population variances are equal because it includes data from all the groups instead of isolating only two and ignoring the majority of the data.
 
 ## Problem 5.10
 
+The role of the degrees of freedom of the *F*-distribution associated with the *F*-statistic is to gather a statistic from the correct distribution, as they fluctuate according to the sample sizes and number of groups being compared. Smaller degrees of freedom create more variability in the distribution, which can skew the F-ratio to a number further away from 1.
 
 ## Problem 5.16
 
@@ -115,7 +119,53 @@ anova(tdglm)
 
 c.
 
+A comparison of the 10-mean model and the 6-mean model is given below.
 
+```{r 18 c, echo = TRUE}
+#Perform F-tests for the data by Treatment (6 means) and by TrtDayGroup (10 means)
+meanmodel6 <- lm(Protein ~ Treatment, data18b)
+anova(meanmodel6)
+meanmodel10 <- lm(Protein ~ TrtDayGroup, data18b)
+anova(meanmodel10)
+```
+ANOVA tables from tow F-tests are shown above, the first performed for the 6-mean model and the second for the 10-mean model. The means from the control group on different days do differ from one another because there is a much smaller *p*-value from the F-test run for 10 separate means (**p = 7.154e-05**) than from the F-test run for 6 separate means (**p = 0.003196**).
 
 
 ## Problem 5.23
+
+The statistical procedures performed to determine whether or not the Tyrannosaurus Rex was warm-blooded or not is shown below. Visualization of the oxygen levels of each respective bone will be shown, along with results from an F-test performed on the data.
+
+```{r 23 visualize, echo = FALSE}
+data23 <- (ex0523)
+#Compare the means visually
+bone1 <- filter(data23, Bone == "Bone1")
+bone2 <- filter(data23, Bone == "Bone2")
+bone3 <- filter(data23, Bone == "Bone3")
+bone4 <- filter(data23, Bone == "Bone4")
+bone5 <- filter(data23, Bone == "Bone5")
+bone6 <- filter(data23, Bone == "Bone6")
+bone7 <- filter(data23, Bone == "Bone7")
+bone8 <- filter(data23, Bone == "Bone8")
+bone9 <- filter(data23, Bone == "Bone9")
+bone10 <- filter(data23, Bone == "Bone10")
+bone11 <- filter(data23, Bone == "Bone11")
+bone12 <- filter(data23, Bone == "Bone12")
+boxplot(bone1$Oxygen, bone2$Oxygen, bone3$Oxygen, bone4$Oxygen, bone5$Oxygen, bone6$Oxygen, bone7$Oxygen, bone8$Oxygen, bone9$Oxygen, bone10$Oxygen, bone11$Oxygen, bone12$Oxygen,
+        main = "Oxygen Isotope Composition of Different T-rex Bones",
+        xlab = "Bone",
+        ylab = "Oxygen Isotope Level",
+        names = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))
+```
+
+The boxplot above shows a comparison of the oxygen isotope levels in each of the 12 respective bones. It can be seen visually that there is a great deal of variability between the isotope levels of different bones. Initial observation indicates that the T-rex may be cold-blooded, due to the large fluctuation in temperatures. An F-test will provide further evidence of this observation.
+
+```{r 23 anova, echo = FALSE}
+#Perform an F-test for the different bone isotope levels
+data23 <- (ex0523)
+bonemodel <- lm(Oxygen ~ Bone, data23)
+anova(bonemodel)
+```
+
+The ANOVA table above provides an analysis of the means and residuals of the oxygen levels of the 12 bones. From the ANOVA table, an extremely small *p*-value of **9.73e-07** is given, which provides convincing evidence that the means of oxygen isotope levels are different for the respective bones. This gives a strong indication that the T-rex was indeed cold-blooded.
+
+These results may not infer causation because this was not a randomized experiment with bones randomly assigned to separate groups. Rather, the 12 bones were observed in their natural states. Additionally, these results may not be inferred to the larger population of Tyrannosaurus Rex specimens because these bones all came from a single T-rex specimen and there could be a number of confounding factors affecting oxygen isotope levels in this specimen such as environmental conditions, geographic location, physiological abnormalities, etc. The results may only be inferred to this single specimen. However, the results provide a good idea of what may be expected in other specimens if these tests were to be repeated.
