@@ -1,0 +1,129 @@
+---
+title: "HW6"
+author: "Logan Bennett"
+date: "10/12/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+#Get multcompview library for Tukey-Kramer test
+library("multcompView")
+#Get DescTools library for Dunnett Test
+library("DescTools")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 6-4
+
+The answer is **(d)**. The range can be larger if the average potential is larger than 3.8 Btu/lb or smaller than 1.6 Btu/lb, but those current largest and smallest averages will continue to exist regardless of the eleventh average, so the range cannot shrink in size.
+
+
+## 6-11
+
+No. As long as the ratio between the coefficients is maintained then the choice will not give a different t-ratio. However, the parameter, estimate, and standard error will all change by a factor of 3.
+
+## 6-12
+
+```{r 12, echo = FALSE}
+#Create a linear combination contrasting the mobility handicaps and the communication handicap
+#First get the averages for each sample
+data12 <- (case0601)
+Hearing <- filter(data12, Handicap == "Hearing")
+Amputee <- filter(data12, Handicap == "Amputee")
+Crutches <- filter(data12, Handicap == "Crutches")
+Wheelchair <- filter(data12, Handicap == "Wheelchair")
+meanhearing <- mean(Hearing$Score)
+meanamp <- mean(Amputee$Score)
+meancrutch <- mean(Crutches$Score)
+meanwheel <- mean(Wheelchair$Score)
+#Create a linear combination that contrasts the mobility and communications handicaps
+#We will choose the communication coefficient as 1 and the mobility coefficients as -1/3
+C_hearing <- 1
+c_mobility <- -1/3
+#Now create the linear combination
+test <- meanhearing * C_hearing + meanamp * c_mobility + meancrutch * c_mobility + meanwheel * c_mobility
+Booleantest <- meanhearing * -C_hearing == meanamp * c_mobility + meancrutch * c_mobility + meanwheel * c_mobility
+```
+
+Using a linear combination to combine the mobility handicaps and contrast them with the communication handicap to test their equivalence gave a result of **FALSE** in a Boolean test. I used `1` for the coefficient of the communication handicap and `-1/3` for the coefficient of the three mobility handicaps. The resulting linear combination did not give a result of 0, but rather of **`r round(test, 2)`** indicating that the average of the means is not equal for both groups.
+
+## 6-16
+
+The multipliers used to construct 95% confidence intervals for the respective treatments are as follows:  
+(i) For the LSD method, the multiplier is **2.042272**.  
+(ii) For the *F*-protected LSD method, since we have a *p*-value that is >0.05, we do declare any individual difference signficant, and we move to either the Tukey-Kramer or Scheffe multiplier, depending on the family.  
+(iii) For the Tukey-Kramer method, the multiplier is **3.04159**.  
+(iv) For the Bonferroni method, the multiplier is **3.1888058**.  
+(v) For the Scheffe method, the multiplier is **2.533554**.
+
+## 6-21
+
+a. The results of a Tukey-Kramer test are given below, including differences in group means (in dollars), 95% confidence intervals (in dollars), and *p*-values. 
+
+```{r 21a, echo = FALSE}
+#Perform a Tukey-Kramer test on the income data
+data21 <- (ex0525)
+#transform data to a linear model, income by education group
+model <- lm(data21$Income2005 ~ data21$Educ)
+ANOVA = aov(model)
+TUKEY <- TukeyHSD(ANOVA)
+TUKEY
+```
+The *p*-values for the majority of the comparisons are low enough to give convincing evidence of a difference between groups and reject the null hypothesis. The only two group comparisons that yielded high *p*-values and gave no evidence of a significant difference were the comparisons between **<12 and 12** years of education and between **>16 and 16** years of education. All other groups give convincing evidence of a difference in income.
+
+b. The results of a Dunnett procedure are given below, including differences between each group and the control (in dollars), 95% confidence intervals (in dollars), and *p*-values.
+
+```{r 21b, echo = FALSE}
+#Perform a Dunnett test on the income data
+data21b <- (ex0525)
+DunnettTest(data21b$Income2005, data21b$Educ, control = "12", conf.level = 0.95)
+
+```
+All the education groups differ from the 12-years group with convincing evidence except for the <12-years group, which has a reported *p*-value of 0.1180 and does not indicate a significant difference between itself and the control.
+
+## 6-23
+
+The work to determine differences between the three diets is shown below.
+
+```{r 23 visualize, echo = FALSE}
+data23 <- (ex0623)
+ggplot(data23, aes(x = Group, y = WtLoss24, color = Group)) +
+  geom_boxplot() +
+  labs(x = "Diet", y = "Weight Loss", title = "Weight Loss by Diet")
+
+```
+
+A boxplot of the weight loss by each respective diet is shown above. Upon visual inspection, there appears to be little difference in weight loss between the groups, though the spreads of the Low-Carbohydrate and Mediterranean diets are larger than that of the Low-Fat diet. An F-test will be able to tell us if there are any significant differences between the groups. The results of the F-test are shown below.
+
+```{r 23 F test, echo = FALSE}
+data23 <- (ex0623)
+#Do an F-test to determine whether there is a difference between any of the groups
+model23 <- lm(WtLoss24 ~ Group, data23)
+ANOVA23 = anova(model23)
+ANOVA23
+```
+
+The reported *p*-value of 0.0409 indicates moderate evidence of a difference in average weight loss between the different diet groups. These results are enough to licit a multiple comparison test. We will use the Tukey-Kramer method to test for unplanned comparisons in the groups. The results of the Tukey-Kramer test are found below.
+
+```{r 23 Tukey, echo = FALSE}
+#Perform a Tukey-Kramer test on the data to determine multiple comparisons between the diets
+model23tukey <- lm(data23$WtLoss24 ~ data23$Group)
+ANOVA23tukey = aov(model23tukey)
+TUKEY23 <- TukeyHSD(ANOVA23tukey)
+TUKEY23
+```
+
+The results of the Tukey-Kramer test shown above indicate that there is no significant difference between the Mediterranean and Low-Carbohydrate diets as well as no significant difference between the Mediterranean and Low-Fat diets. However, there is moderate evidence of a difference between the Low-Fat and Low-Carbohydrate diets, indicated by a *p*-value of 0.0329. It is possible that the weight loss may be affected by diet. If so, there does not seem to be much of a difference between the Low-Carbohydrate and the Mediterranean diet or between the Mediterranean and the Low-Fat diet. However, given the choice between the Low-Fat and the Low-Carbohydrate diet, the Low-Carbohydrate diet seems to be more effective in promoting weight loss. The data does not indicate one diet that is better than all other alternatives.
+
+The results of this study may not be inferred to a larger population because the overweight employees used in the study were recruited from a single workplace, and this is not a random sample. The 322 subjects were randomly assigned to treatment groups, so the results may lead to causal inferences. However, there may be some confounding factors to consider, including the proportion of men and women in each group, especially where men and women were given differing calorie/day restrictions. It would be interesting to do this study on randomized groups of men and women to see how the results differ.
+
+
+
