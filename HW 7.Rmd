@@ -1,0 +1,167 @@
+---
+title: "HW7"
+author: "Logan Bennett"
+date: "10/17/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 7.2
+
+Improving the accuracy of the distance measurements would reduce the standard error of the regression line and would reduce the standard deviations of the least squares estimates.
+
+## 7.9
+
+a. No. This does not imply that males of height 0 weigh 5 kg on average. The values of the regression should not be extrapolated outside the limits of the data.  
+b. No. This does not imply that the simple linear regression is meaningless since the data will likely be valid within the range of heights provided in the dataset.
+
+## 7.15
+
+Plots of the relationship between pollen gathered and duration of visit are shown below.
+
+a.
+```{r 7-15a plot, echo = FALSE}
+data15 <- (ex0327)
+queen <- filter(data15, BeeType == "Queen")
+ggplot(queen, aes(x = PollenRemoved, y = DurationOfVisit, color = PollenRemoved)) + 
+  labs( x = "Pollen Removed", y = "Duration Of Visit", title = "Pollen Vs. Duration of Visit") +
+  geom_point()
+```
+
+b.
+```{r 7-15b linear regression, echo = FALSE}
+#Create a scatter plot with a fitted simple linear regression line
+ggplot(queen, aes(x = PollenRemoved, y = DurationOfVisit, color = PollenRemoved)) + 
+  labs( x = "Pollen Removed", y = "Duration Of Visit", title = "Pollen Vs. Duration of Visit") +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+I cannot see any indication of a problem with this fitted linear regression line. There seem to be a couple of outliers that could sway the data, but for the most part this regression line seems to match the data well.
+
+
+## 7.21
+
+Plots and models of planets order and distances from the sun, excluding and including the asteroid belt, are shown below.
+
+a. and b.
+
+```{r 7-21 a-b, echo = FALSE}
+#Create a plot of log distance vs order with a fitted least squares regression line
+data21a <- (ex0721)
+data21a$Name2 <- NULL
+data21a$Order2 <- NULL
+data21a$Distance2 <- NULL
+data21a <- data21a[-c(10),]
+ggplot(data21a, aes(x = log(Distance), y = Order, color = Order)) + 
+  labs( x = "Log Distance", y = "Order", title = "Log Distance Vs. Order") +
+  geom_point() +
+  geom_smooth(method = lm) +
+  coord_flip()
+```
+c.
+```{r 7-21c, echo = FALSE}
+#Get the estimate of sigma (sample SD) from the least squares fit
+data21model <- lm(log(Distance) ~ Order, data = data21a)
+summary(data21model)
+```
+From the summary of a fitted least squares model shown above, the estimate of $\sigma$ is **0.2512** on 7 degrees of freedom.
+
+d.
+```{r 7.21d, echo = FALSE}
+#Plot the residuals vs. fitted values for the model
+plot(data21model, which = 1)
+```
+e. and f.
+```{r 7-21 e-f, echo = FALSE}
+#Create a plot of log distance vs order with a fitted least squares regression line
+data21e <- (ex0721)
+data21e$Name <- NULL
+data21e$Order <- NULL
+data21e$Distance <- NULL
+ggplot(data21e, aes(x = log(Distance2), y = Order2, color = Order2)) + 
+  labs( x = "Log Distance", y = "Order", title = "Log Distance Vs. Order") +
+  geom_point() +
+  geom_smooth(method = lm) +
+  coord_flip()
+
+```
+g.
+```{r 7-21 g, echo = FALSE}
+#Get the estimate of sigma (sample SD) from the least squares fit
+data21model2 <- lm(log(Distance2) ~ Order2, data = data21e)
+summary(data21model2)
+```
+From the summary of a fitted least squares model shown above, the estimate of $\sigma$ is **0.1357** on 8 degrees of freedom.
+
+h.
+```{r 7-21 h, echo = FALSE}
+#Plot the residuals vs. fitted values for the model
+plot(data21model2, which = 1)
+```
+i.
+The simple linear regression model appears to fit better with the **second set of 10 "planets"**. The 10-planet scatterplot of log of distance versus order has the observed points closer to the fitted regression line than the 9-planet scatterplot, and the confidence interval is smaller, indicating a smaller standard error. This is confirmed by the fact that the 10-planet dataset has a smaller value of $\sigma$ and that the residuals are shown closer to 0 in the residual vs. fitted plot than in that of the 9-planet dataset.
+
+## 7.25
+
+A scatterplot of measured distance of the respective nebulae and their recession velocities is shown below. A fitted least squares regression line is included. From the data, the regression line seems to have an intercept close to 0, but further analysis will give additional indications of what the intercept may be.
+
+```{r 7-25, echo = FALSE}
+data25 <- (ex0725)
+ggplot(data25, aes(x = Velocity, y = Distance, color = Distance)) + 
+  labs(x = "Velocity (km/sec)", y = "Distance (million parsecs)", title = "Measured Distance Vs. Recession Velocity") +
+  geom_point() +
+  geom_smooth(method = lm)
+
+```
+```{r 7-25 model, echo = FALSE}
+#fit a linear model and get the coefficients, without the intercept
+model25 <- lm(Distance ~ -1 + Velocity, data = data25)
+summary(model25)
+#Get just coefficients from model:
+#coef(model25)
+#Get confidence interval from model:
+confint(model25, 'Velocity', level = 0.95)
+```
+The above linear regression model (adjusted to fit the regression through the origin) indicates an velocity of **0.0017298** megaparsecs-seconds per kilometer, which would indicate an age of the universe of  **1.694** billion years, with a confidence interval of to **1.589** to **1.801** billion years. Without adjusting to fit the regression through the origin, an estimate of the age of universe is **1.609** billion years, with an intercept of **0.9537**. This is not consistent with the Big Bang Theory that there is no intercept (or that the universe began with the Big Bang).
+
+The relationship shown by these far-away nebulae are shown to have a smaller confidence interval than the Hubble data. This relationship is also indicated in the scatterplot shown above, in comparison to that of Display 7.1. There does seem to be a positive trend in both cases between recession velocity and distance from Earth, but it appears to be more precise as that distance increases. Making sense of that difference is complicated due to the method of gathering distance data from mean luminosities, which was not particularly accurate.
+
+These findings cannot be inferred to a larger population, AKA we cannot assume to get similar results from any other group of nebulae, since these were not randomly selected. We also cannot say that the distance of the nebulae caused their velocity, since groups of nebulae were not randomly assigned. This is an observational study that can give us correlation and insights into a well-known theory, but beyond that we cannot infer much.
+
+## 7.29
+
+A scatterplot of the exit polling data below shows the relationship between the distance of interviewers from the door to the overestimate of Kerry's success. A fitted least squares regression line is provided.
+
+```{r 7-29, echo = FALSE}
+data29 <- (ex0729)
+ggplot(data29, aes(x = Distance, y = OverEstimate, color = OverEstimate)) + 
+  labs(x = "Distance of Interviewer", y = "Kerry Overestimate", title = "Distance vs. Kerry Overestimate") +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+The scatterplot seems to indicate a clear linear relationship between the distance of the interviewer from the door and the degree of the overestimate for Kerry. This relationship will further be investigated by *t*-tools on the least squares linear regression, as shown below.
+
+```{r 7-29model, echo = FALSE}
+model29 <- lm(OverEstimate ~ Distance, data = data29)
+summary(model29)
+#In model summary, the p-values for the coefficients are testing whether or not they are zero
+#The F-test statistic at the bottom is checking whether any of the variables can explain the relationship (has influence)
+#In this case the p-value of the F-test is the same as the p-value of the slope because there is only one variable
+```
+
+The model of the regression plot shown above convincingly indicates parameter values of **5.258** for the intercept and **0.065** for the slope, both with small *p*-values. This tells us that there is an inherent overestimate of Kerry's polling points, which may indicate that Kerry supporters are more willing to be interviewed post-voting, as was previously hypothesized. The least squares regression line fits the data very well, as indicated by the high R-squared value of **0.9374**, and the small *p*-value of **0.0009575** gives convincing evidence of a relationship between the distance and the overestimate. We can reject the null hypothesis and claim that the distance that the interviewer stands from the door does make a difference in the overestimate that will be polled.
+
+These results were not produced using a random sample since interviewees were volunteers, and so the results cannot be inferred to other instances of interviewers and interviewees. Nor can the overestimate of Kerry's polling numbers be attributed to the distance from the door, since voters were not randomly assigned to speak to interviewers at separate distances. This observational study shows us a strong correlation between the distance from the door and the overestimate of Kerry's numbers, but this may be due to confounding factors such as a mentality difference between voters, for example. As mentioned, there may be bias depending on the candidates' pools of voters, which is not accounted for in the data specifically.
