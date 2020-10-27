@@ -100,16 +100,21 @@ c. Summary statistics of the linear regression model created on the dataset sans
 #Create a model and use the model coefficients to estimate the absentee percentage of a machine percentage of 49.3
 undisputedmodel <- lm(DemPctOfAbsenteeVotes ~ DemPctOfMachineVotes, undisputed)
 summary(undisputedmodel)
+#Try to get a prediction interval
+#data20 <- (ex0820)
+#data20[22,7] = NA
+#predict(lm(DemPctOfAbsenteeVotes ~ DemPctOfMachineVotes, data20), se.fit = TRUE, prediction = "Interval")
 ```
-From this model and its coefficients, the estimated value of the percentage of absentee ballots cast for the democratic candidate if the percentage of machine-counted ballots cast for the democratic candidate is 49.3 is equal to $5.5339 + 0.8388(49.3)$, for an estimate of **`r round(5.5339+0.8388*49.3, 1)` percent**. From the model, the standard error is equal to **7.407 percent**. The number of standard errors between the estimated value of the absentee percentage of 46.9 percent and the observed absentee percentage of 79.0 percent is **`r round((79.0-46.9)/7.407,1)` standard deviations**. A *t*-value for 95% confidence on 19 degrees of freedom is equal to 2.093. This corresponds to a *p*-value of **0.0364**.
+
+From this model and its coefficients, the estimated value of the percentage of absentee ballots cast for the democratic candidate if the percentage of machine-counted ballots cast for the democratic candidate is 49.3 is equal to $5.5339 + 0.8388(49.3)$, for an estimate of **`r round(5.5339+0.8388*49.3, 1)` percent**. From the model, the individual standard error is equal to **7.8758 percent**. The number of standard errors between the estimated value of the absentee percentage of 46.9 percent and the observed absentee percentage of 79.0 percent is **`r round((79.0-46.9)/7.8758, 3)` standard deviations**. This corresponds to a *p*-value of **0.0006**.
 
 d. 
 
 ```{r 8-20d, echo = FALSE}
 #Do a Bonferroni adjustment on the p-value to account for all 22 residuals
-p.adjust(0.0364, method = "bonferroni", 21)
+p.adjust(0.000644, method = "bonferroni", 22)
 ```
-Using a computational adjustment tool, the new *p*-value adjusted for all 22 residuals with the Bonferroni method is **0.7644**.
+Using a computational adjustment tool, the new *p*-value adjusted for all 22 residuals with the Bonferroni method is **0.0142**.
 
 ## 8-25
 
