@@ -1,0 +1,135 @@
+---
+title: "HW8"
+author: "Logan Bennett"
+date: "10/22/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 8-6
+
+Using the volume as an explanatory variable in a simple linear regression model allows the stress level means to be interpolated for volumes that are not explicitly included in the study since the means are modeled on a straight line. If the volume is used as a grouping variable (versus a continuous explanatory variable) then the model may not have values of stress level on a straight line, and interpolation for other volume levels may not be possible.
+
+## 8-12
+
+If the separate means model is fitted right on the line then there will be no residual sum of squares and in turn the mean square will be zero. Since the mean square of the separate means model is the estimate of the variance, and this is used as the denominator of the F-statistic in the lack of fit test, then the F-statistic will be undefined and we would not be able to perform the test.
+
+## 8-19
+
+a. A plot of the linear regression model as well as a residual plot of the queen data are shown below.
+
+```{r 8-19, echo = FALSE}
+data19 <- (ex0327)
+queen <- filter(data19, BeeType == "Queen")
+ggplot(queen, aes(x = DurationOfVisit, y = PollenRemoved, color = PollenRemoved)) + 
+  labs( x = "Duration of Visit", y = "Pollen Removed", title = "Pollen Removed on Duration of Visit") +
+  geom_point() +
+  geom_smooth(method = lm)
+queenmodel <- lm(PollenRemoved ~ DurationOfVisit, queen)
+plot(queenmodel, which = 1)
+```
+
+The variance from the linear model seems quite large as shown in the first graph above. The residual plot shows a pattern of residuals that alternate from negative to positive to negative again, which is indicative of an undesirable fit of the data to the linear regression model. This isn't necessarily a horn-shaped pattern, but the distinct pattern in the variance is not ideal.
+
+b. Plots of the linear regression model and residual plot for a log transformation of X are shown below. A log transformation of Y had little to no effect on the fit and both plots looked similar to those found in part a.
+
+```{r 8-19b, echo = FALSE}
+#Try transformations to see if they fit the data better
+ggplot(queen, aes(x = log(DurationOfVisit), y = PollenRemoved, color = PollenRemoved)) + 
+  labs( x = "Duration of Visit", y = "Pollen Removed", title = "Pollen Removed on Duration of Visit") +
+  geom_point() +
+  geom_smooth(method = lm)
+queenmodel <- lm(PollenRemoved ~ log(DurationOfVisit), queen)
+plot(queenmodel, which = 1)
+```
+
+c. Plots of the linear regression model and residual plot for the model without the two largest Duration times are shown below.
+
+```{r 8-19c, echo = FALSE}
+queenreduced <- queen
+#Remove rows for the two largest DurationOfVisit values
+queenreduced <- queenreduced[-c(14, 34),]
+ggplot(queenreduced, aes(x = log(DurationOfVisit), y = PollenRemoved, color = PollenRemoved)) + 
+  labs( x = "Duration of Visit", y = "Pollen Removed", title = "Pollen Removed on Duration of Visit") +
+  geom_point() +
+  geom_smooth(method = lm)
+queenreducedmodel <- lm(PollenRemoved ~ DurationOfVisit, queenreduced)
+plot(queenreducedmodel, which = 1)
+```
+
+As can be seen from the linear regression plot and the residual plot above, the model fits very well for the range of duration times not including the two largest values. This linear model would be appropriate for interpolation between this new reduced range of X.
+
+## 8-20
+
+a. A scatterplot of Democratic percentage of absentee ballots versus Democratic percentage of machine-counted ballots is shown below.
+
+```{r 8-20a, echo = FALSE}
+data20 <- (ex0820)
+ggplot(data20, aes(x = DemPctOfMachineVotes, y = DemPctOfAbsenteeVotes, color = Disputed, shape = Disputed)) + 
+  labs( x = "Percentage of Machine Votes for Democrat", y = "Percentage of Absentee Votes for Democrat", title = "Democrat Percentage of Machine Ballots vs. Absentee Ballots") +
+  geom_point(size = 5)
+```
+b. A scatterplot of Democratic percentage of absentee ballots versus Democratic percentage of machine-counted ballots not including the disputed election data is shown below.
+
+```{r 8-20b, echo = FALSE}
+#Get a dataset without the disputed value to plot
+undisputed <- data20
+undisputed <- undisputed[-c(22),]
+ggplot(undisputed, aes(x = DemPctOfMachineVotes, y = DemPctOfAbsenteeVotes, color = DemPctOfAbsenteeVotes)) + 
+  labs(x = "Percentage of Machine Votes for Democrat", y = "Percentage of Absentee Votes for Democrat", title = "Undisputed Democrat Percentage of Machine Ballots vs. Absentee Ballots") +
+  geom_point(size = 5) +
+  geom_smooth(method=lm)
+```
+
+The linear regression model of percentage of absentee votes for the democratic candidate versus the percentage of machine-counted votes for the democratic candidate in respective elections shows a fairly well correlated linear relationships between the two values. In most instances, it appears that the percentage of votes received for democratic candidates is about the same for those from absentee ballots and machine-counted ballots, with some variance. However, the disputed election has a percentage of absentee ballots that falls clearly outside of the 95% confidence interval of this linear model, which suggests that some form of voter fraud or tampering could have taken place.
+
+c. Summary statistics of the linear regression model created on the dataset sans the disputed election are shown below. The fitted intercept $\beta0$ = 5.5339 and the slope $\beta1$ = 0.8338.
+
+```{r 8-20c, echo = FALSE}
+#Create a model and use the model coefficients to estimate the absentee percentage of a machine percentage of 49.3
+undisputedmodel <- lm(DemPctOfAbsenteeVotes ~ DemPctOfMachineVotes, undisputed)
+summary(undisputedmodel)
+```
+From this model and its coefficients, the estimated value of the percentage of absentee ballots cast for the democratic candidate if the percentage of machine-counted ballots cast for the democratic candidate is 49.3 is equal to $5.5339 + 0.8388(49.3)$, for an estimate of **`r round(5.5339+0.8388*49.3, 1)` percent**. From the model, the standard error is equal to **7.407 percent**. The number of standard errors between the estimated value of the absentee percentage of 46.9 percent and the observed absentee percentage of 79.0 percent is **`r round((79.0-46.9)/7.407,1)` standard deviations**. A *t*-value for 95% confidence on 19 degrees of freedom is equal to 2.093. This corresponds to a *p*-value of **0.0364**.
+
+d. 
+
+```{r 8-20d, echo = FALSE}
+#Do a Bonferroni adjustment on the p-value to account for all 22 residuals
+p.adjust(0.0364, method = "bonferroni", 21)
+```
+Using a computational adjustment tool, the new *p*-value adjusted for all 22 residuals with the Bonferroni method is **0.7644**.
+
+## 8-25
+
+A relationship between the number of Bush votes and Buchanan votes is detailed below in a scatterplot and linear regression model. The best fit of the simple linear regression model is found when both the response and explanatory variables have undergone a log transformation.
+
+```{r 8-25, echo = FALSE}
+data25 <- (ex0825)
+data25 <- data25[-c(67),]
+#Create a scatterplot of Bush votes vs. Buchanan votes
+ggplot(data25, aes(x = log(Bush2000), y = log(Buchanan2000), color = Buchanan2000)) + 
+  labs(x = "Log Number of Votes for Bush", y = "Log Number of Votes for Buchanan", title = "Log Bush Votes vs. Log Buchanan Votes in 2000") +
+  geom_point(size = 3) +
+  geom_smooth(method=lm)
+#Get a model for the number of Buchanan votes from Bush Votes
+data25model <- lm(log(Buchanan2000) ~ log(Bush2000), data25)
+summary(data25model)
+#confidence interval for the coefficients. Use the upper and lower bounds of the intercept to calculate the upper and lower bounds of the predicted value
+confint(data25model)
+```
+
+From the linear regression model shown above, an equation for the mean number of Buchanan votes from Bush votes on the log scale excluding the Palm Beach data is $$\mu(log(Y)|log(X)) = -2.34149+0.73096log(X)$$ We can then interpret the median number of votes Buchanan would have received for the number of votes Bush received as $Median{Y|X} = exp(-2.34149)X^.73096$, where X is the 152846 votes Bush received. This correlates to a median value of votes that Buchanan would have received of **`r round(exp(-2.34149)*152846^.73096, 0)`** votes, with a 95% prediction interval of **`r round(exp(-2.34149)*152846^.659109, 0)`** to **`r round(exp(-2.34149)*152846^.802815, 0)`** votes. This would mean that of the 3407 votes cast for Buchanan in Palm Beach County, anywhere from **`r 3407-1397`** to **`r 3407-251`** votes likely belonged to Gore, which potentially could have swayed the results of the election.  
+
+This was not a random sample of election data nor was a it a randomized experiment. This observational study does indicate with strong evidence that the number of votes Buchanan received in Palm Beach County does fall outside the expected value of votes according to the relationship between Bush votes and Buchanan votes in this one election. However, we cannot say that the ballot is the cause of this discrepancy, nor can we extrapolate these results to other elections.
