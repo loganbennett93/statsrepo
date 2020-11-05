@@ -1,0 +1,177 @@
+---
+title: "HW9"
+author: "Logan Bennett"
+date: "11/4/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+```
+
+## 9-1
+
+a. A multiple regression model for the meadowfoam data with two separate levels of time would be:
+
+flowers = $\beta0$ + $\beta1$ * *light* + $\beta2$ * *early*
+
+b. To achieve nonparallel regression lines, a term would be added to make the model:
+
+flowers = $\beta0$ + $\beta1$ * *light* + $\beta2$ * *early* + $\beta3$ * (*light* * *early*)
+
+## 9-4
+
+No. This does not imply that the median of the brain weight of the sloth is 5.5% higher than that of the bat because that assumptions ignores the other variables that are in the model which also have an influence on brainweight. While the log of gestation period does have an influence on log of brain weight, so do log of body weight and log of litter size. The interpretation of a relationship based off of one regression coefficient variable ignores the fact that that coefficient is obtained by holding all other variables constant. In this case, the proposed relationship (5.5% higher median brain weight in sloths than in bats), assumes that the body weight and litter size of fruit bats and sloths are equal, which they are not. In reality, the model indicates that body weight has a larger influence on brain weight than the gestation period (and litter's influence isn't much smaller), and it is clear to see that we cannot interpret the entire explanation of change in brain weight to gestation period alone.
+
+## 9-10
+
+a. After accounting for all other effects, the estimated mean IQ of children who received breast milk is **8.3** points higher than those who did not.
+
+b. It is still appropriate to include them as explanatory variables as long as they are still linear in relationship.
+
+c. It is appropriate to only report the *p*-value, since it provides convincing evidence that the coefficient is not zero.
+
+d. The act of physical breastfeeding is not included because all babies had to be fed from tubes, which removes the confounding variable.
+
+e. There could be a relationship between the decision to breast feed and social class or mother's education. Including these variables as explanatory variables means that the coefficient associated with breast milk in the diet is estimated when the effects of social class and mother's education are held constant. This means that that it reduces the effects of confounding variables.
+
+f. i. The estimated IQ for those who received 100% breast milk would be 4.5 points higher `(0.09*(100-50))` than for those who didn't.
+
+f. ii. It is important to use the percentage of breast milk because otherwise it ignores the fact that the proportion of breast milk in the diet may have a direct effect on IQ. That proportion is independent of the mother's decision whether or not breast feed which could be a confounding variable, since it may be related to social class or education level.
+
+## 9-12
+
+a.
+```{r 9-12, echo = FALSE}
+#Create a matrix scatterplot of the logged values of the data
+data12 <- (case0902)
+data12 <- log(data12[,2:5])
+pairs(data12, upper.panel = NULL)
+```
+b.
+```{r 9-12 multiple linear regression, echo = FALSE}
+#Do a multiple linear regression on log of brain weight on log body weight, log gestation, and log litter size
+data12a <- (case0902)
+model12a <- lm(log(Brain) ~ log(Body) + log(Gestation) + log(Litter), data = data12a)
+summary(model12a)
+```
+c.
+```{r 9-12 c, echo = FALSE}
+data12c <- (case0902)
+data12c$Species <- NULL
+data12c$Brain <- log(data12c$Brain)
+data12c$Body <- log(data12c$Body)
+data12c$Gestation <- log(data12c$Gestation)
+pairs(data12c, upper.panel = NULL)
+```
+Comparing the plot of log litter size on log brain weight to the plot of untransformed litter size on logged brain weight, it appears that the relationship remains largely unchanged. Linearity of the model is not markably enhanced or worsened, from initial visualization.
+
+
+## 9-16
+
+a.
+```{r 9-16a, echo = FALSE}
+data16 <- (ex0327)
+ggplot(data16, aes(x = DurationOfVisit, y = PollenRemoved, color = BeeType, shape = BeeType)) + 
+  labs( x = "Duration of Visit", y = "Pollen Removed", title = "Pollen Removed vs. Duration of Visit for Bee Types") +
+  geom_point(size = 3)
+```
+The relationship between Duration of Visit and Pollen Removed does not appear to be linear, rather quadratic in nature.
+
+b.
+```{r 9-16b, echo = FALSE}
+data16b <- (ex0327)
+#Do a logit transformation of the pollen data
+data16b$PollenRemoved <- log((data16b$PollenRemoved)/(1-data16b$PollenRemoved))
+ggplot(data16b, aes(x = DurationOfVisit, y = PollenRemoved, color = BeeType, shape = BeeType)) + 
+  labs( x = "Duration of Visit", y = "Logit of Pollen Removed", title = "Logit of Pollen Removed vs. Duration of Visit for Bee Types") +
+  geom_point(size = 3)
+```
+
+c.
+```{r 9-13c, echo = FALSE}
+data16c <- (ex0327)
+#Do a logit transformation of the pollen data
+data16c$PollenRemoved <- log((data16c$PollenRemoved)/(1-data16c$PollenRemoved))
+#Do a log transformation of the duration data
+data16c$DurationOfVisit <- log(data16c$DurationOfVisit)
+ggplot(data16c, aes(x = DurationOfVisit, y = PollenRemoved, color = BeeType, shape = BeeType)) + 
+  labs( x = "Logged Duration of Visit", y = "Logit of Pollen Removed", title = "Logit of Pollen Removed vs. Logged Duration of Visit for Bee Types") +
+  geom_point(size = 3)
+```
+Of the three plots, the third of the logit of pollen removed on logged duration of visit appears to be the only one that is worthy of pursuing with a regression model, due to the more clear linear relationship between the variables.
+
+d.
+```{r 9-16c model, echo = FALSE}
+model16c <- lm(PollenRemoved ~ DurationOfVisit + BeeType + DurationOfVisit * BeeType, data = data16c)
+summary(model16c)
+```
+From the summary of the multiple linear regression model above, the *p*-value of the interaction term is **0.342**. This indicates that there is no evidence that the proportion of pollen depends on duration of visit differently for queens and workers.
+
+e.
+
+```{r 9-16c model c2, echo = FALSE}
+model16c2 <- lm(PollenRemoved ~ DurationOfVisit + BeeType, data = data16c)
+summary(model16c2)
+```
+As the regression model indicates, the *p*-value of Bee Type, after accounting for the Duration of Visit, is **0.0202**. This indicates with moderate evidence that there is a difference in the proportion of pollen removed by queens and workers. The results indicate that on average the proportion of pollen gathered by workers is larger than that of queens (difference in intercepts) by a value of **0.5697**. The *p*-value of the indicator variable in this model is much more significant than in the one with the interaction term (**.0202** versus **0.342**) because in the model with the interaction the relationship between the indicator variable (bee type) and the explanatory variable is accounted for, so it has less significance to the fit of the model. Without the interaction term in this model, the relationship between bee type and duration of visit isn't accounted for, so the differences in the model will be more significantly attributed to the indicator variable, assuming the duration of visit is held in constant. With more variables in a model, a more accurate view of what explains the change in the response variable is possible.
+
+## 9-20
+
+a. A scatterplot of race time by year is shown below.
+
+```{r 9-20a, echo = FALSE}
+data20 <- (ex0920)
+#Fit a quadratic model to the data
+ggplot(data20, aes(x = Year, y = Time, color = Time)) + 
+  labs( x = "Year", y = "Time", title = "Race Time by Year") +
+  geom_point(size = 3) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2))
+```
+From this scatterplot, there is an apparent curvature to the data, as speeds have gone up and times have inversely gone done over time. A quadratic multiple regression model fitted to the curve is shown on the data. The details of that model are shown below, along with 95% confidence intervals for each model coefficient. A residual versus fitted graph also shows the wellness of fit of the quadratic model.
+
+```{r 9-20a model, echo = FALSE}
+model20 <- lm(Time ~ Year + I(Year^2), data20)
+summary(model20)
+confint(model20)
+plot(model20, which = 1)
+```
+b.
+
+In order to quantify the amount by which the mean winning time or speed on fast tracks exceeds the mean on slow tracks, we need to add the Conditions variable as an indicator variable to our model from part a. The associated output is shown below, along with 95% confidence intervals for each model coefficient.
+
+```{r 9-20b model, echo = FALSE}
+model20b <- lm(Time ~ Year + I(Year^2) + Conditions, data20)
+summary(model20b)
+confint(model20b)
+```
+Using the results of the model above, we can deduce with convincing evidence (*p*-value = **2e-16**) that the mean winning times on slow tracks are **3.5 seconds** longer than those on fast tracks, after accounting for the effect of year.
+
+c.
+
+To see if there is any evidence of the number of starters after accounting for the effects of year and track conditions, we simply add *Starters* as another variable to our model. The output of that model is shown below, along with 95% confidence intervals for each model coefficient.
+
+```{r 9-20c, echo = FALSE}
+model20c <- lm(Time ~ Year + I(Year^2) + Conditions + Starters, data20)
+summary(model20c)
+confint(model20c)
+```
+With a *p*-value of **0.054**, this model provides suggestive but inconclusive evidence of an effect of the number of horses in the race after accounting for the effects of year and track conditions. We will now add an interaction variable between *Starters* and *Conditions* to see if there is an interactive effect between the effect of the number of horses and whether the track was fast or slow. The output of that model is shown below, along with 95% confidence intervals for each model coefficient.
+
+```{r 9-20d, echo = FALSE}
+model20d <- lm(Time ~ Year + I(Year^2) + Conditions + Starters + Starters * Conditions, data20)
+summary(model20d)
+confint(model20d)
+```
+From the results of the model including the interaction term, the *p*-value of that interaction is **0.2914**, after accounting for the effects of year, starts, and conditions alone. This indicates that there is no evidence in the model of an interactive effect between the number of horses in the race and whether the track was slow or fast. In the model with the interactive effect, the effect of *Starters* in the race is slightly more significant (*p*-value = **0.0287**) than in the model excluding any interactive effect (*p*-value = **0.054**), and gives convincing evidence of an effect. However, we must not solely interpret signficance of an effect on the rejection of the null hypothesis. Though there is slightly stronger evidence that the effect of *Starters* is not zero in this model, the actual effect of number of horses in the race on winning times is actually quite small (estimate = **8.492e-02** seconds), even if slightly larger than the effect of the number of horses in the race in the model without the interaction term (estimate = **6.656e-02** seconds). (Confidence intervals for the coefficients are shown below each respective model summary).
+
+The results of these models were not calculated on data that was randomly sampled, since it is a collection of Kentucky Derby winners, so it would not be appropriate to assume that the results could be inferred to other races or contestants. While the model fits the data quite well, this is an observational study and we cannot infer causation of winning time to any of the variables included in the models. We must also be careful to only interpolate winning times within the bounds of the values of the explanatory variables given.
+
