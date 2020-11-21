@@ -1,0 +1,253 @@
+---
+title: "HW10"
+author: "Logan Bennett"
+date: "11/9/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+```
+
+## 10-2
+
+Yes. Statistical analysis can distinguish between direct and indirect association by comparison of models with different variables. The extra-sum-of-squares *F*-test can indicate which terms are important and which aren't. 
+
+## 10-10
+
+```{r 10-10}
+#Get an F-statistic and p-value for the test that the slopes are the same for the three species
+#AKA do an Extra-sum-of-squares F-test with a full model that contains interaction terms (alternate slopes)
+data10 <- (ex0722)
+data10 <- within(data10, Species <- relevel(Species, ref = "Hemigrapsus nudus"))
+model10reduced <- lm(log(Force) ~ log(Height) + Species, data = data10)
+model10 <- lm(log(Force) ~ log(Height) + Species + log(Height) * Species, data = data10)
+anova(model10reduced, model10)
+```
+An extra-sum-of-squares test used to test that the slopes are the same for the three species is shown above. The *F*-statistic of **6.3615** corresponds to a *p*-value of **0.00472**, which poses strong evidence against the null hypothesis that the slopes are the same.
+
+## 10-13
+
+a.
+```{r 10-13a, echo = FALSE}
+data13 <- (case1002)
+#Create a parallel regression model with non-echolocating bat as the reference variable
+data13 <- within(data13, Type <- relevel(Type, ref = "non-echolocating bats"))
+model13 <- lm(log(Energy) ~ log(Mass) + Type, data = data13)
+#Give the model coefficients
+summary(model13)
+```
+b.
+
+From the model, the intercept and slopes for the groups are as follows: 
+(i) non-echolocating bats: **Intercept = -1.57636 and Slope = 0.81496**  
+(ii) non-echolocating birds: **Intercept = -1.4741 and Slope = 0.81496**  
+(iii) echolocating bats: **Intercept = -1.4977 and Slope = 0.81496**
+
+c.
+
+```{r 10-13c, echo = FALSE}
+data13 <- (case1002)
+#Create a parallel regression model with non-echolocating bat as the reference variable
+data13 <- within(data13, Type <- relevel(Type, ref = "echolocating bats"))
+model13 <- lm(log(Energy) ~ log(Mass) + Type, data = data13)
+#Give the model coefficients
+summary(model13)
+```
+d.
+From the model, the intercept and slopes for the groups are as follows: 
+(i) non-echolocating bats: **Intercept = -1.57636 and Slope = 0.81496**  
+(ii) non-echolocating birds: **Intercept = -1.4741 and Slope = 0.81496**  
+(iii) echolocating bats: **Intercept = -1.4977 and Slope = 0.81496**
+
+The slopes and intercepts for each respective group is the same regardless of which group is chosen as the reference level.
+
+e.
+```{r 10-13e, echo = FALSE}
+#Create a reduced model
+reduced1 <- lm(log(Energy) ~ log(Mass), data = data13)
+#Run an extra-sum-of-squares F-test for testing equality of intercepts in the parallel regression lines
+anova(reduced1, model13)
+```
+From the results of the extra-sum-of-squares *F*-test, which provides us with a large *p*-value of **0.6593**, we can conclude that there is no evidence of a difference between the parallel lines for echolocating bats and non-echolocating birds. The reduced model without the indicator variables explains the relationship just as well as the parallel regression model.
+
+## 10-19
+
+a. A visualization of the  data is shown below, along with summary of the model of flowers on light with an indicator variable of Time = 24 is shown below, and an ANOVA table, as requested in the problem.
+```{r 10-19a, echo = FALSE}
+data19 <- (case0901)
+#2 = early (24) and 1 = late
+ggplot(data19, aes(x = Intensity, y = Flowers, color = Time)) + 
+  labs( x = "Light Intensity", y = "Number of Flowers", title = "Number of Flowers vs. Light Intensity by Time") +
+  geom_point(size = 3) +
+  geom_smooth(method = lm)
+#Create the reduced model to verify the effect of time as an indicator variable
+reduced19 <- lm(Flowers ~ Intensity, data = data19)
+data19 <- within(data19, Time <- relevel(as.factor(Time), ref = "2"))
+full19a <- lm(Flowers ~ Intensity + Time, data = data19)
+summary(full19a)
+#Perform the lack-of-fit test (Egg says this isn't really a lack of fit, but shows the residual line, which we want)
+anova(full19a)
+```
+
+b. A summary of the model of flowers on light with an indicator variable of Time = 24, intensity as a factor, and an interaction term between the two is shown below, along with an ANOVA table, as requested in the problem.
+```{r 10-19b, echo = FALSE}
+#Create a separate full model with light as a factor to compare with the reduced model
+full19b <- lm(Flowers ~ as.factor(Intensity) + Time + as.factor(Intensity) * Time, data = data19)
+summary(full19b)
+#Perform the lack-of-fit test
+anova(full19b)
+```
+
+c. An extra-sum-of-squares *F*-test comparing the full model from part b to the reduced model from part a is shown below.
+```{r 10-19c, echo = FALSE}
+#Compare the full model in b to the reduced model in an extra-sum-of-squares F test
+anova(full19a, full19b)
+```
+An extra-sum-of-square *F*-test comparing the full model in part b to the reduced model in part a was run. The analysis of variance table above provide the results of that test. The high *p*-value of **0.8894** indicates that there is no evidence of a difference between the full and reduced models. In this case it is more advantageous to use the reduced model because it is less complex, yet provides us with results that are statistically as accurate as the more complex full model.
+
+
+## 10-28
+
+a. Initial visualization of the data of Storms by Year is shown below.
+```{r 10-28 visualize a, echo = FALSE}
+data28 <- (ex1028)
+#Visualize the data
+ggplot(data28, aes(x = Year, y = Storms, color = Year)) + 
+  labs( x = "Year", y = "Storms", title = "Storms by Year") +
+  geom_point(size = 3) +
+  stat_smooth(method = lm)
+```
+The initial visualization shows relatively even variance of storms over the years, though there appear to be a couple of potential outliers near the later years, which may mean that variance slightly increases over the years. We will run the model with El Nino and West African wetness as indicator variables and check a residual plot to verify if that model will be a good approximation of the data. The summary of that model and its associated residual plot are shown below.
+
+```{r 10-28 model a, echo = FALSE}
+#Create a model with Temperature and West Africa as indicator variables, with "neutral" temp. as the reference level
+data28 <- within(data28, ElNino <- relevel(as.factor(ElNino), ref = "neutral"))
+model28a <- lm(Storms ~ as.factor(ElNino) + as.factor(WestAfrica) + Year, data = data28)
+summary(model28a)
+plot(model28a, which = 1)
+```
+It appears from the residual plot that observations 4, 20, and 46 may be outliers, but they do not appear to strongly influence the data and for the most part the fitted values match the residuals fairly well. The coefficients of that model are given above in the model summary, with differences in the effects of cold, warm, and neutral El Nino (reference level) on the number of storms. A Tukey-Kramer test of multiple comparisons on the effects of El Nino on Storms, adjusted for West African wetness and time trends over the years, is shown below.
+
+```{r Tukey test a, echo = FALSE}
+library("multcompView")
+#Perform a Tukey-Kramer Test to figure out the differences in effects of El Nino
+#all categories must be included as factors
+data28 <- (ex1028)
+data28$Year <- cut(data28$Year, breaks = 2)
+ANOVAa = aov(Storms ~ ElNino + as.factor(WestAfrica) + Year, data28)
+TUKEYa <- TukeyHSD(ANOVAa)
+TUKEYa
+```
+The results of the Tukey-Kramer indicate that there is no evidence of a difference between number of storms for cold and neutral El Ninos after adjusting for West African wetness and time trends, with a *p*-value of **0.4389**. There is moderate evidence of a difference between warm and neutral El Ninos, with a *p*-value of **0.0148**. There is convincing evidence of a difference between warm and cold El Ninos, with a *p*-value of **0.0004**. This supports the thought that warm phase of El Nino suppresses storms while a cold phase encourages them. The test indicates that there are on average **2.8125** more storms for neutral El Ninos than for warm El Ninos, with a confidence interval from **0.4802** to **5.1448** storms. The are on average **4.0000** more storms following cold El Ninos than following warm El Ninos, with a confidence interval from **1.6677** to **6.3323** storms.
+
+b.
+ Initial visualization of the data of Hurricanes by Year is shown below.
+```{r 10-28 visualize b, echo = FALSE}
+data28 <- (ex1028)
+#Visualize the data
+ggplot(data28, aes(x = Year, y = Hurricanes, color = Year)) + 
+  labs( x = "Year", y = "Hurricanes", title = "Hurricanes by Year") +
+  geom_point(size = 3) +
+  stat_smooth(method = lm)
+```
+The initial visualization shows relatively even variance of hurricanes over the years, though there appear to be a couple of potential outliers near the later years, which may mean that variance slightly increases over the years. We will run the model with El Nino and West African wetness as indicator variables and check a residual plot to verify if that model will be a good approximation of the data. The summary of that model and its associated residual plot are shown below.
+
+```{r 10-28 model b, echo = FALSE}
+#Create a model with Temperature and West Africa as indicator variables, with "neutral" temp. as the reference level
+data28 <- within(data28, ElNino <- relevel(as.factor(ElNino), ref = "neutral"))
+model28b <- lm(Hurricanes ~ as.factor(ElNino) + as.factor(WestAfrica) + Year, data = data28)
+summary(model28b)
+plot(model28b, which = 1)
+```
+It appears from the residual plot that observations 2, 20, and 1 may be outliers, but they do not appear to strongly influence the data and for the most part the fitted values match the residuals fairly well. The coefficients of that model are given above in the model summary, with differences in the effects of cold, warm, and neutral El Nino (reference level) on the number of hurricanes. A Tukey-Kramer test of multiple comparisons on the effects of El Nino on Hurricanes, adjusted for West African wetness and time trends over the years, is shown below.
+
+```{r Tukey test b, echo = FALSE}
+library("multcompView")
+#Perform a Tukey-Kramer Test to figure out the differences in effects of El Nino
+#all categories must be included as factors
+data28 <- (ex1028)
+data28$Year <- cut(data28$Year, breaks = 2)
+ANOVAb = aov(Hurricanes ~ ElNino + as.factor(WestAfrica) + Year, data28)
+TUKEYb <- TukeyHSD(ANOVAb)
+TUKEYb
+```
+The results of the Tukey-Kramer indicate that there is no evidence of a difference between number of hurricanes for cold and neutral El Ninos after adjusting for West African wetness and time trends, with a *p*-value of **0.5336**. There is convincing evidence of a difference between warm and neutral El Ninos, with a *p*-value of **0.0066**. There is convincing evidence of a difference between warm and cold El Ninos, with a *p*-value of **0.00027**. This supports the thought that warm phase of El Nino suppresses hurricanes while a cold phase encourages them. The test indicates that there are on average **2.2500** more hurricanes for neutral El Ninos than for warm El Ninos, with a confidence interval from **0.5587** to **3.941** hurricanes. The are on average **3.000** more storms following cold El Ninos than following warm El Ninos, with a confidence interval from **1.309** to **4.691** storms.
+
+c.
+ Initial visualization of the data of storm Index by Year is shown below.
+```{r 10-28 visualize c, echo = FALSE}
+data28 <- (ex1028)
+#Visualize the data
+ggplot(data28, aes(x = Year, y = StormIndex, color = Year)) + 
+  labs( x = "Year", y = "StormIndex", title = "Storm Index by Year") +
+  geom_point(size = 3) +
+  stat_smooth(method = lm)
+```
+The initial visualization shows relatively even variance of Storm Index over the years, though there appear to be a couple of potential outliers near the later years, which may mean that variance slightly increases over the years. We will run the model with El Nino and West African wetness as indicator variables and check a residual plot to verify if that model will be a good approximation of the data. The summary of that model and its associated residual plot are shown below.
+
+```{r 10-28 model c, echo = FALSE}
+#Create a model with Temperature and West Africa as indicator variables, with "neutral" temp. as the reference level
+data28 <- within(data28, ElNino <- relevel(as.factor(ElNino), ref = "neutral"))
+model28c <- lm(StormIndex ~ as.factor(ElNino) + as.factor(WestAfrica) + Year, data = data28)
+summary(model28c)
+plot(model28c, which = 1)
+```
+It appears from the residual plot that observations 47, 1, and 46 may be outliers, but they do not appear to strongly influence the data and for the most part the fitted values match the residuals fairly well. The coefficients of that model are given above in the model summary, with differences in the effects of cold, warm, and neutral El Nino (reference level) on the storm index. A Tukey-Kramer test of multiple comparisons on the effects of El Nino on Storm Index, adjusted for West African wetness and time trends over the years, is shown below.
+
+```{r Tukey test c, echo = FALSE}
+library("multcompView")
+#Perform a Tukey-Kramer Test to figure out the differences in effects of El Nino
+#all categories must be included as factors
+data28 <- (ex1028)
+data28$Year <- cut(data28$Year, breaks = 2)
+ANOVAc = aov(StormIndex ~ ElNino + as.factor(WestAfrica) + Year, data28)
+TUKEYc <- TukeyHSD(ANOVAc)
+TUKEYc
+```
+The results of the Tukey-Kramer indicate that there is moderate evidence of a difference in Storm Index values for cold and neutral El Ninos after adjusting for West African wetness and time trends, with a *p*-value of **0.02098**. There is moderate evidence of a difference between warm and neutral El Ninos, with a *p*-value of **0.0267**. There is convincing evidence of a difference between warm and cold El Ninos, with a *p*-value of **0.000006**. The test indicates that the Storm Index for Cold El Nino phases is on average **39.625** points higher than for neutral El Nino phases, with a confidence interval between **5.1404** and **74.1096** points. There are on average **38.250** more points on the Storm Index for neutral El Ninos than for warm El Ninos, with a confidence interval between **3.7654** and **72.7346** points. There are on average **77.875** more points on the Storm Index following cold El Ninos than following warm El Ninos, with a confidence interval from **43.3904** to **112.3596** points. The Storm Index findings are somewhat different from the findings for number of storms and number of hurricanes perhaps due to the large number of confounding variables used to calculate the Index value.
+
+The data used in this study were not randomly sampled, but rather are yearly logs of the parameters. Therefore, the results cannot be inferred to a larger population of years, but must only be interpreted in the range of years provided. There could be a number of confounding factors outside of this sample that would influence the results, so we cannot extrapolate to other years. This is also an observational study, so we cannot infer that the El Nino temperature is the cause of the fluctuation in storms, though it appears there is an association between temperature and the number of storms.
+
+
+
+
+## 10-32
+
+a.  scatterplot matrix of the relationships between all variables found in this dataset is shown below.
+```{r 10-32, echo = FALSE}
+data32 <- (ex0726)
+#Visualize the data
+pairs(data32, upper.panel = NULL)
+```
+
+The scatterplots above indicate that some relationships between height and ther other variables are stronger than others. It appears that there is a generally positive correlation between the height of children and the height of fathers and mothers, and that the heights of males are greater than those of females. Further modeling will help to analyze these relationships in conjunction with one another. A summary of the model created for this relationship is shown below.
+
+```{r 10-32 model, echo = FALSE}
+model32a <- lm(Height ~ Mother + Father + Gender, data = data32) #2 intercepts 2 slopes?
+summary(model32a)
+```
+From this model, an equation for predicting a child's adult height from their mother's height, father's height, and their gender would be **Height of Child (inches) = 16.432 + 0.3184(mother's height (inches)) + 0.39339(father's height (inches)) + 5.219 (if male)**.
+
+b. According to the model, when the parents' heights are the same, the male mean height exceeds the female mean height by **5.219 inches**, which is the value of the coefficient for the gender indicator variable.
+
+c. 
+```{r 10-32 prediction, echo = FALSE}
+#Create a new data frame that sets the number of cars
+fathermother = data.frame(Gender = "female", Father = 72, Mother = 64)
+#Get a prediction interval for the value
+predict(model32a, fathermother, interval = "predict")
+
+```
+A prediction for an adult female whose father is 72 inches tall and whose mother is 64 inches tall is **65.13** inches, with a prediction interval of **60.88** to **69.39** inches.
+
+Galton's sample of 933 adult children and their parents was not random, and there could be confounding factors in these families between race, ethnicity, social class, etc. We cannot extrapolate this equation to families outside of those studied. We also cannot determine causation from the data since this is an observational study. However, the prediction equation can be useful and could be an example of results that may be replicated in further studies. We must also be careful that this equation cannot be used outside the bounds of the heights of mothers and fathers used in the dataset. For the prediciton in part c, the father's height and mother's height are within those bounds, so the prediction interval is valid for this set of data.
+

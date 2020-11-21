@@ -1,0 +1,191 @@
+---
+title: "HW11"
+author: "Logan Bennett"
+date: "11/14/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+library("multcompView")
+library("olsrr")
+```
+
+## 11-2
+
+a. Neither model is a modification of the other. If model 2 had both B2fem and the interaction term, then we could use an extra-sum-of-squares *F*-test to check the usefulness of the interaction term.
+
+b. i. B2
+b. ii. B2gast
+
+## 11-7
+
+The case with the male with the most experience is particularly distant from the other values of the explanatory variable. Since the slope of the males changes and differs from the female slope with that case included, the conclusions of the whole test rest on the presence of that case. It is safest to remove the case and limit the results to the range of 10 years of experience or less. Only then can the true relationship between male and female salarities and experience be deduced, since there is sparse data outside that range.
+
+## 11-18
+a. A summary of the log of the brain-to-liver ratio on the treatment indicator, sacrifice time, and all covariates is given below.
+```{r 11-18a model, echo = FALSE}
+data18 <- (case1102)
+#Add a column of brain to liver ratio
+BLR <- (data18$Brain / data18$Liver)
+data18 <- cbind(data18, BLR)
+#Fit regression of log response to all covariates, the treatment indicator, and sacrifice time as a four-level factor)
+data18 <- within(data18, Time <- relevel(as.factor(Time), ref = "0.5"))
+model18 <- lm(log(BLR) ~ Treatment + Days + Sex + Weight + Loss + Tumor + Time, data = data18)
+summary(model18)
+```
+*P*-values for the respective coefficients of this model give an early indication of the importance of these variables. Case influence statistics are shown below, including a leverage plot, a studentized residual plot, and a plot of Cook's Distance.
+
+```{r 11-18a case influence statistics, echo = FALSE}
+#library("olsrr)
+ols_plot_resid_lev(model18) #Leverage
+ols_plot_resid_stud(model18) #Studentized Residual
+ols_plot_cooksd_chart(model18) #Cook's Distance
+```
+
+b. Based off of the case influence statistics above, a few cases seem to have the potential to be influential. According to the leverage plot, there are no cases that seem to have a high leverage. The studentized residual plot, however, declares observations 31 and 34 to be outliers (when interpreting a "large" studentized residual as absolutely greater than 2). The Cook's Distance plot indicates that observations 31, 33, and 34 may be influential on the parameters of the model. Though non of the values of the Cook's Distance approach 1 (which we may interpret as "large"), the fact that observations 31 and 33 are seen as abnormal according to all case statistics indicates that these observations may indeed be in somewhat influential on the fit of this model.
+
+## 11-20
+
+Summaries of the original model of the T-rex data, the model without the smallest value of *X*, and the model without the two smallest values of *X* are shown below, in that order.
+```{r 11-20a, echo = FALSE}
+data20 <- (ex1120)
+model20 <- lm(Calcite ~ Carbonate, data = data20)
+#get rid of the smallest X value
+data20X <- (ex1120)
+data20X <- data20X[-c(1),]
+model20X <- lm(Calcite ~ Carbonate, data = data20X)
+#get rid of the two smallest X values
+data20XX <- (ex1120)
+data20XX <- data20XX[-c(1,2),]
+model20XX <- lm(Calcite ~ Carbonate, data = data20XX)
+#Summarize the three models to compare
+summary(model20)
+summary(model20X)
+summary(model20XX)
+```
+a. It appears from the regression that the effect of carbonate becomes less significant as the smallest values of X are deleted, as indicated by the increase of the *p*-values from **7.93e-08** in the original model, **5.65e-08** in the model with the smallest value deleted, and **0.0178** in the model with the two smallest value deleted. The R-squared values also decrease from **0.8427** to **0.6718** to **0.3398** as the values are removed.
+
+b. The *R*-squared value changes so much because the two smallest values of X greatly reduced the range of values used to create the linear regression model. This resulted in a large change in the *R*-squared denominator, while the *R*-squared numerator didn't change that much at all. So while the linear regression models do seem to fit the data well, the disproportionate change in the range of X values to the change in the regressions caused the *R*-squared values to decrease.
+
+c. The case influence statistics for the T-rex data are shown below.
+```{r 11-20 c, echo = FALSE}
+ols_plot_resid_lev(model20) #Leverage
+ols_plot_resid_stud(model20) #Studentized Residual
+ols_plot_cooksd_chart(model20) #Cook's Distance
+```
+
+From the Leverage plot, Studentized Residuals plot, and Cook's Distance plot, it appears that case 1 has high leverage of about 0.56 and a high Cook's Distance of about 1. The Studentized residual value of case 1 does not appear very abnormal, but the other two case statistics are indicative of a high influence from that case.
+
+d. The case influence statistics for the T-rex data, excluding the lowest value of X, are shown below.
+```{r 11-20 d, echo = FALSE}
+ols_plot_resid_lev(model20X) #Leverage
+ols_plot_resid_stud(model20X) #Studentized Residual
+ols_plot_cooksd_chart(model20X) #Cook's Distance
+```
+
+e. With the lowest value of X removed, the second case (now shown in the plots above as case 1), does seem to be largely influential according to all case statistics. It has a high leverage, a high Studentized residual (when "large" residuals are interpreted as >2), and a high Cook's Distance. Pairs of influential observations may not be found within the usual case influence statistics because they may not be influential to the same magnitude. In this instance, case 2 was indeed an influential observation, but that influence was not readily seen until the first case was removed.
+
+f. One could conclude that both unusual cases are influential. Case 1 is more influential in the full model and case 2 is not very influential. However, in the subsequent model when case 1 has been removed, case 2 becomes extremely influential. This means that the influence of cases is dependant on the context of the model in which they are found.
+
+## 11-23
+
+An initial visualization of the relationships between mortality and the respective explanatory variables is given below.
+```{r 11-23, echo = FALSE}
+data23 <- (ex1123)
+pairs(data23, upper.panel = NULL)
+```
+
+A few notable relationships are seen from the scatterplot matrix. It appears that the relative pollution potential of SO2 seems to have a more positive correlation with mortality than that of NOX. Positive correlations with mortality also appear to be present in the amount of precipitation and the percentage of the population that is nonwhite while a negative correlation appears to exist between mortality and years of education. A regression model accounting for these explanatory variables will provide better indication of the influence of each. A model that includes all explanatory variables provides estimates of variables when all others are held constant. A summary of that model is shown below, along with a residual plot.
+
+```{r 11-23 model, echo = FALSE}
+model23 <- lm(Mort ~ NOX + SO2 + Precip + Educ + NonWhite, data = data23)
+summary(model23)
+plot(model23, which = 1)
+```
+
+The regression model confirms what is seen in the visualization. The effect of NOX on mortality, after the effects of the climate and socioeconomic variables are accounted for, is low. The large *p*-value of **0.432** provides no evidence that we should reject the null hypothesis that the coefficient for NOX is zero. On the other hand, the effect of SO2 on mortality appears to be significant, as indicated by the low *p*-value of **0.00028**. It is estimated that for each one-unit increase in the relative pollution potential of SO2, there is an increase of **0.3554** deaths per 100,000 population, with a confidence interval from **0.1722** to **0.5387** deaths. In this case, the conclusions do not change when the cases in question are deleted, though it appears that no clear lesson can be learned from those cases.
+
+While these results do follow the expected relationship from the visualization, we should look at case influence statistics to see if there are any cities that may be affecting the results. In particular, we should pay attention to Lancaster and York, which may not have the same socioeconomic patterns found in the other cities. The case influence statistics for this model are shown below.
+
+```{r 11-23 case influence statistics, echo = FALSE}
+ols_plot_resid_lev(model23) #Leverage
+ols_plot_resid_stud(model23) #Studentized Residual
+ols_plot_cooksd_chart(model23) #Cook's Distance
+```
+
+Of particular interest in the above statistics are the cases 4, 7, 8, and 60, which correspond to Lancaster, Miami, Los Angeles, and New Orleans. These four cases have larger Cook's Distances than the other observations (though these do not approach a "large" distance of 1 or even suspicious distances of 0.6 or 0.7). Los Angeles appears to be the only observation with an extremely high leverage, at just under 0.8, though it has a fairly normal Studentized Residual. Lancaster, Miami, Buffalo, Wilmington, and New Orleans seem to have large (>2) Studentized residuals. Comparing the case influence statistics across the three plots, it appears that Lancaster, Miami, Los Angeles, and New Orleans have the potential to be influential. We will run the model again omitting these outliers to see how the parameters change.
+
+```{r 11-23 modelb, echo = FALSE}
+data23b <- (ex1123)
+data23b <- data23b[-c(4,7,8,60),]
+model23b <- lm(Mort ~ NOX + SO2 + Precip + Educ + NonWhite, data = data23b)
+summary(model23b)
+```
+When those potentially influential cases are removed the significance of the SO2 on mortality increases, as indicated by the lower *p*-value of **0.0001**, and the significance of NOX decreases, with a larger *p*-value of **0.9000**. The updated estimate of the effect of SO2's relative pollution potential on mortality is that for every one-unit increase, there are an estimated number of deaths per 100,000 population of **0.3579**, with a confidence interval from **0.1861** to **0.5297** deaths.
+
+This is an observational study of cities, so we cannot infer that the cause of mortality was indeed the levels of SO2's relative pollution potential. Nor were the cities randomly sampled, so we cannot infer the observed results to other cities outside the scope of the study. However, these results may be indicative of a general effect of SO2 on mortality and similar observational studies could be done in other parts of the world for comparison.
+
+## 11-24
+
+An initial visualization of the relationships between maximum dispersal distance, body mass, and diet type is shown below.
+```{r 11-24, echo = FALSE}
+data24 <- (ex1124)
+pairs(data24, upper.panel = NULL)
+```
+
+From the visualization, there does not appear to be a clear relationship between body mass and max distance due to the spread of the observations. While most observations appear to have an extremely positive correlation with max distance, there appear to be outlying observations that may skew the correlation. Initial observation of the relationship between max distance and diet type is unclear.  A regression model accounting for these explanatory variables will provide better indication of the influence of each. A summary of that model is shown below, along with a residual plot of the model.
+
+```{r 11-24 model, echo = FALSE}
+model24 <- lm(MaxDist ~ BodyMass + Type, data = data24)
+summary(model24)
+plot(model24, which = 1)
+```
+
+The model indicates with convincing evidence that there is a difference in intercepts for species with carnivorous diets (*p*-value = **2.36e-07**), and herbivorous diets (*p*-value = **2.49e-05**), but provides no evidence of a difference for species with omnivorous diets (*p*-value = **0.1513**). There also appears to be suggestive but inconclusive evidence of an effect of body mass on maximum dispersal difference (*p*-value = **0.0568**). These least squares estimates could be affected by the potential outliers observed from initial visualization of the data. Case influence statistics will provide a better idea of which cases may be disproportionately shifting the regression. The case influence statistics for this model are shown below. The residual plot indicates a number of outliers that may be at play.
+
+```{r 11-24 case influence statistics, echo = FALSE}
+ols_plot_resid_lev(model24) #Leverage
+ols_plot_resid_stud(model24) #Studentized Residual
+ols_plot_cooksd_chart(model24) #Cook's Distance
+```
+
+Further investigation of the data indicates the need for some data cleaning. For instance, there appears to be an error in the data, where case 49, which corresponds to "Microtus xanthognathus." Also known as the taiga vole, this animal is quite small. However, its body mass is shown to be larger than that of the American black bear. That case will be deleted due to the incorrectness of the data. Additionally,  63, 7, 64, and 6 have unusually "distant" values of BodyMass, and so we will remove them and restrict the bounds of our analysis to those animals between 0.004 and 67.125 kg. We will check the residual plot and case influence statistics again to verify what removing these values does for the regression.
+
+```{r 11-24 remove outliers, echo = FALSE}
+data24b <- data24[-c(6,7,49,63,64),]
+model24b <- lm(MaxDist ~ BodyMass + Type, data = data24b)
+plot(model24b, which = 1)
+ols_plot_resid_lev(model24b) #Leverage
+ols_plot_resid_stud(model24b) #Studentized Residual
+ols_plot_cooksd_chart(model24b) #Cook's Distance
+```
+
+The second iteration of the residual plot and case influence statistics indicate some new information. The residual plot is similar to that from the first model prior to the removal of the distant explanatory variable values. Observations 8, 20, and 19 appear to be outliers. These values do not have large Cook's Distances and therefore likely do not have a huge influence on the regression. Comparison of the other case influence statistics indicates a number of points that have high (>2) Studentized residuals (cases 6, 12, 17, 18, and 54), some that have high leverage (cases 6, 14, 20, 58, and 59), and some with relatively high Cook's Distances when compared with the other observations (cases 6, 17, 18, 58, and 59). While some of these cases overlap and show "potential" to have influence, none of them have "high" Cook's Distances, and so we can conclude that their influence is not strong enough to promote concern. We will attempt another attempt of finding a better fit of the data, by transformation.
+
+```{r 11-24 model c transformation, echo = FALSE}
+data24c <- data24b
+model24c <- lm(log(MaxDist) ~ log(BodyMass) + Type, data = data24c)
+plot(model24c, which = 1)
+ols_plot_resid_lev(model24c) #Leverage
+ols_plot_resid_stud(model24c) #Studentized Residual
+ols_plot_cooksd_chart(model24c) #Cook's Distance
+```
+
+The residual plot when both the response variable and explanatory variable are logged provides a good fit to the model with equal variability of residuals. The case statistics also show potential influence for some cases, but all with low Cook's Distances (no case is above 0.3). This model provides a good relationship between maximum dispersal distance as a function of body mass and diet type. the summary of that model is shown below.
+
+```{r 11-24 model c, echo = FALSE}
+summary(model24c)
+```
+This model has a relatively high Adjusted R-squared value of 0.6955, as well as a low *p*-value of 7.414e-15 from an *F*-test, which indicates that the fitted model performs well when compared with an intercept-only model. It strongly insinuates that there is a relationship between the body mass and the dispersal distance. From this model, it can be interpreted that a doubling of BodyMass is associated with a multiplicative change of **2^0.5636** in the median of the dispersal distance, with a confidence interval between **2^0.4185** to **2^0.7087**. The intercept for carnivorous animals is interpreted as e^3.1398 or `r round(exp(3.1398),2)` km (confidence interval from `r round(exp(2.486475),2)` to `r round(exp(3.7932),2)`), with the intercept for herbivorous animals as e^-2.3223 or `r round(exp(-2.3223),2)` km less than carnivorous animals (confidence interval from `r round(exp(-3.1589),2)` to `r round(exp(-1.48572),2)`) and that of omnivorous animals as e^-1.2805 or `r round(exp(-1.2805),2)` km less than carnivorous animals (confidence interval from `r round(exp(-2.5694),2)` to `r round(exp(0.00836),2)`.
+
+The data in this problem was not a random sample, so we cannot interpret the results outside of this sample, nor can we extrapolate results outside of the bounds of the explanatory variables given. This was also not a randomized experiment with animals randomly assigned to different groups, so we cannot infer causation of dispersal distance from any of the variables in the model.
+

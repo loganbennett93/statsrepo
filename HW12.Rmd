@@ -1,0 +1,144 @@
+---
+title: "HW12"
+author: "Logan Bennett"
+date: "11/19/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set
+library("Sleuth3")
+library("tidyr")
+library("tidyverse")
+library("ANOVAreplication")
+library("knitr")
+library("ggplot2")
+library("multcompView")
+library("olsrr")
+```
+
+## 12.4
+
+a. The estimated sex difference will be less after length of hair is accounted for, since differences in sex will be confounded with differing lengths of hair between men and women..
+
+b. This variable should not be used because the sexes should be compared after adjustment for variables relating to the salary. Also, it is likely correlated with sex, and would be redundant.
+
+
+## 12.7
+
+This will always be the case because `Cp = p` when the number of regression coefficients used in the model is equal to the number of potential regression coefficients.
+
+
+## 12.17
+
+A model including all weather and socioeconomic explanatory variables was created, then variable selection calculations were performed on all iterations of these variables. Visualizations of the results on a number of variable selection methods are shown below.
+```{r 12-17a, echo = FALSE}
+data17 <- (ex1217)
+model17 <- lm(Mortality ~ Precip + Humidity + JanTemp + JulyTemp + Over65 + House + Educ + Sound + Density + NonWhite + WhiteCol + Poor, data = data17)
+#Do variable selection calculations on the model with the given parameters
+a <- ols_step_all_possible(model17)
+#Plot the variable selection results
+plot(a)
+```
+
+From the results of the variable selection tests, the model with the lowest Cp value (Cp = 3.443) is shown to be model 1586, one with the six variables of Precip, JanTemp, JulyTemp, Educ, Density, and NonWhite. This model also had the lowest BIC value of 439.551. Those results are confirmed using the best subset function, which includes the most appropriate model for each number of parameters, determined using several of the variable selection methods. The results of those 12 plots are shown below as well.
+
+```{r 12-17a best, echo = FALSE}
+# Show the best model
+b <- ols_step_best_subset(model17)
+# Precip JanTemp JulyTemp Educ Density NonWhite 
+plot(b)
+```
+
+From these results, we conclude that an appropriate regression model of weather and socioeconomic variables on mortality includes the 6 explanatory variables of Precip, JanTemp, JulyTemp, Educ, Density, and NonWhite. An extra-sum-of-squares test will be run on this model compared to the same model with the three logged pollution variables in order to evaluate the usefulness of their addition. The results of that test are found below.
+
+```{r 12-17a F test, echo = FALSE}
+#Good-fitting model after variable selection
+model17a <- lm(Mortality ~ Precip + JanTemp + JulyTemp + Educ + Density + NonWhite, data = data17)
+#Good fitting model with logged pollution potential variables
+model17pollution <- lm(Mortality ~ Precip + JanTemp + JulyTemp + Educ + Density + NonWhite + 
+                         log(HC) + log(NOX) + log(SO2), data = data17)
+#Perform an extra-sum-of-squares F-test on the models
+anova(model17a, model17pollution)
+```
+The results of the extra-sum-of-squares *F*-test provide an *F*-statistic of **4.365**, which corresponds to a *p*-value of **0.008313**. This provides convincing evidence that the mean mortality differs with the addition of the pollution potential variables.
+
+b.
+We will repeat the process, but using a stepwise regression. A summary of that variable selection process is shown below, along with plots for various variable selection parameters used during the process.
+```{r 12-17 b, echo = FALSE}
+#Do stepwise regression calculations on the model with the given parameters
+c <- ols_step_both_p(model17)
+c
+plot(c)
+```
+
+The stepwise regression method indicated that a model with four variables, JanTemp, House, Educ, and NonWhite, provides a sufficient fit for the data. This model also appeared in the "Best Subsets Regression" output from above. An extra-sum-of-squares test will be run on this model compared to the same model with the three logged pollution variables in order to evaluate the usefulness of their addition. The results of that test are found below.
+
+```{r 12-17b models, echo = FALSE}
+#Model from Stepwise Regression
+model17b <- lm(Mortality ~ JanTemp + Educ + NonWhite + House, data = data17)
+#Stepwise Regression Model with the logged pollution potential variables
+model17pollutionb <- lm(Mortality ~ JanTemp + Educ + NonWhite + House +
+                         log(HC) + log(NOX) + log(SO2), data = data17)
+#Perform an extra-sum-of-squares F-test on the models
+anova(model17b, model17pollutionb)
+```
+Sequential variable selection in this case did not produce a model with as convincing of evidence that the mean mortality differs with the addition of the pollution potential variables. While the *p*-value from the extra-sum-of-squares *F*-test was **0.008313** from the models found using the Cp and BIC values, the *p*-value from the *F*-test comparing the models found using stepwise regression was slightly larger, at **0.03077**. This indicates with only moderate evidence of the difference when pollution potential variables are added.
+
+## 12.18
+
+```{r}
+K <- 4 #number of explanatory variables
+P <- (K*(K+3)/2) + 1 #number of parameters
+```
+If there are 4 explanatory variables, then a saturated second-order model that includes all terms and interactions terms is equal to `r P`.
+
+## 12.22
+
+A brief visualization of the dataset provided is shown below.
+
+```{r 12-22, echo = FALSE}
+data22 <- (ex1222)
+data22numeric <- data22
+data22numeric$County = NULL
+pairs(data22numeric, upper.panel = NULL)
+```
+Initial visualization indicates that there may be correlation between several of the explanatory variables, as indicated by the linear trends seen in several of the plots. The outlier of Palm Beach County is readily seen in all plots involving Buchanan's 2000 votes, and so the Palm Beach data will be excluded before a fitted model is investigated. In order to find a fitted model, variable selection techniques will be employed. As encouraged in the problem, all data will be transformed, in this case by the square root transformation since we are dealing with counts. A suitable model will then be chosen based off of the lowest BIC and Cp values provided by the variable selection techniques. Below are visual representations of a number of variable selection statistics for all models. Results are confirmed using the best subset function, which shows the best fitted model for each respective number of potential parameters.
+
+```{r 12-22 variable selection, echo = FALSE}
+#First get rid of the Palm Beach County data
+data22 <- data22[-c(67),]
+#Create a model with all variables logged + 1
+model22 <- lm(sqrt(Buchanan2000) ~ sqrt(Gore2000) + sqrt(Bush2000) + sqrt(Nader2000) + sqrt(Browne2000) + sqrt(Total2000) + sqrt(Clinton96) + sqrt(Dole96) + sqrt(Perot96) + sqrt(Buchanan96p) + sqrt(ReformReg) + sqrt(TotalReg), data = data22)
+#Do variable selection calculations on the model with the given parameters
+z <- ols_step_all_possible(model22)
+#Plot the variable selection results
+plot(z)
+```
+
+```{r 12-22 best model, echo = FALSE}
+# Show the best model
+y <- ols_step_best_subset(model22)
+# Precip JanTemp JulyTemp Educ Density NonWhite 
+plot(y)
+```
+
+From the models evaluated in the variable selection methods, one model stands out as having the best fit. Of the 2047 models analyzed for several variable selection statistics, model 1486 had the lowest BIC value of 115.2133 and the second lowest Cp value of 7.0248. This model includes seven of the eleven potential variables. A summary of the model is shown below.
+
+```{r 12-22 model, echo = FALSE}
+model22z <- lm(sqrt(Buchanan2000) ~ sqrt(Gore2000) + sqrt(Bush2000) + sqrt(Nader2000) + sqrt(Total2000) + sqrt(Perot96) + sqrt(Buchanan96p) + sqrt(TotalReg), data = data22)
+summary(model22z)
+```
+Using this model and the data provided, we can get a prediction for the number of votes that Buchanan should have received in Palm Beach County, given the actual counts for the other elections in Palm Beach. A prediction for the number of votes is shown below, which can then be compared to the actual number of votes received in 2000.
+
+```{r 12-22 prediciton, echo = FALSE}
+#Create a new data frame that sets the number of votes (sqrt) for each election variable in the model
+PalmBeach = data.frame(Gore2000 = 268945, Bush2000 = 152846, Nader2000 = 5564, Total2000 = 428098, Perot96 = 30739, Buchanan96p = 8788, TotalReg = 14358)
+#Get a prediction interval for the value
+predict(model22z, PalmBeach, interval = "predict")
+```
+A prediction for the number of votes Buchanan should have received in Palm Beach County in the 2000 election from the square root model is given as 21.72181 votes. Back-transformed, this translates to roughly **472** votes. Compared to the 3407 votes that Buchanan did receive in Palm Beach County in 2000, a prediction of the number of Palm Beach County votes that were not intended for him were equal to `3407 - 472`, or **2935** votes. It is important to note that the parameter estimates from the model are valid to produce this prediction. However, due to the data snooping involved in the variable selection process, *p*-values or prediction intervals related to the parameter estimates are not reliable.
+
+This was not a random sample of election data nor was a it a randomized experiment. We therefore cannot say that the Paom Beach County butterfly ballot is the cause of this discrepancy in intended votes, nor can we extrapolate these results to other elections.
